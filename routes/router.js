@@ -1,5 +1,5 @@
 const router = require('express').Router()
 
-router.use("/",(req,res)=>{res.json({test:"hai"})})
+router.use("/",require("./user_router"))
 
 module.exports = router
