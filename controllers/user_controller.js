@@ -49,6 +49,22 @@ const user_controller = {
          })
         }
      },
+     logout: async (req,res)=>{
+         try{
+           const data = await user_service.logout_service(res)
+           res.status(200).json({
+              success:true,
+              status:200,
+              data
+           })
+         }catch(err){
+          res.status(err.status).json({
+              success: false,
+              status: err.status,
+              message: err.message
+          })
+         }
+      }
 }
 
 module.exports = user_controller
