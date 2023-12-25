@@ -59,6 +59,34 @@ const auth_middleware = {
 
             })
         }
+    },
+    auth_operator:(req,res,next)=>{
+        try{
+            const user = req.user
+            if(!user){
+                res.status(403).json({
+                    success: false,
+                    status_code: 403,
+                    message: "Access token invalid."
+                })
+            }
+            if(user.role!=="operator"){
+                res.status(403).json({
+                    success:false,
+                    status_code: 403,
+                    message: "You are not permitted to access"
+                })
+            }
+
+            next()
+        }catch(err){
+            res.status(500).json({
+                success:false,
+                status_code: 500,
+                message:err.message
+
+            })
+        }
     }
 }
 

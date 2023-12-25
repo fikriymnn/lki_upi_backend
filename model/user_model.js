@@ -18,15 +18,11 @@ const user_schema = new mongoose.Schema({
         type:String,
         required:true
     },
-    jenis_instansi : {
+    jenis_institusi : {
         type:String,
         required:true
     },
-    nama_instansi : {
-        type:String,
-        required:true
-    },
-    jabatan: {
+    nama_institusi : {
         type:String,
         required:true
     },
@@ -38,4 +34,4 @@ const user_schema = new mongoose.Schema({
 {timestamps:true}
 )
 
-module.export =  mongoose.model("User",user_schema)
+module.exports =  mongoose.model("User",user_schema)

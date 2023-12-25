@@ -5,14 +5,14 @@ const { generate_access_token } = require('../utils/jwt')
 const user_service = {
     register_service: async (req, res) => {
         try {
-            const { password, email, jenis_instansi, nama_instansi, jabatan, no_telp, nama_lengkap } = req.body
-            if (!password && !email && !jenis_instansi && !nama_instansi && !jabatan && !no_telp && !nama_lengkap) {
+            const { password, email,jenis_institusi, nama_institusi, no_telp, nama_lengkap } = req.body
+            if (!password && !email && !nama_institusi && !no_telp && !nama_lengkap && !jenis_institusi) {
                 throw {
                     status: 400,
                     message: "Incomplete input data."
                 }
             }
-            const user_exist = await User.find({ email })
+            const user_exist = await User.findOne({email})
             if (user_exist) {
                 throw {
                     status: 400,
@@ -20,11 +20,11 @@ const user_service = {
                 }
             }
             const hash_password = await bcrypt.hash(password, 10)
-            const new_user = new User({ email, password: hash_password, nama_lengkap, nama_instansi, jabatan, jenis_instansi, no_telp })
+            const new_user = new User({ email, password: hash_password, nama_lengkap, nama_institusi, jenis_institusi, no_telp })
             await new_user.save()
 
             const user = await User.findOne({ email })
-            const access_token = generate_access_token({ _id: user._id, email, role: user.role, jenis_instansi, nama_instansi, jabatan, no_telp, nama_lengkap })
+            const access_token = generate_access_token({ _id: user._id, email, role: user.role, jenis_institusi, nama_institusi,no_telp, nama_lengkap })
 
             res.cookie("access_token", access_token, {
                 httpOnly: true,
@@ -35,8 +35,8 @@ const user_service = {
                 _id: user._id,
                 email,
                 nama_lengkap,
-                nama_instansi,
-                jabatan,
+                jenis_institusi,
+                nama_institusi,
                 no_telp, role: "user"
             }
         } catch (err) {
@@ -73,7 +73,7 @@ const user_service = {
             }
             const access_token = generate_access_token({
                 _id: user_exist._id,
-                email, jenis_instansi: user_exist.jenis_instansi, nama_instansi: user_exist.nama_instansi, jabatan: user_exist.jabatan, no_telp: user_exist.no_telp, nama_lengkap: user_exist.nama_lengkap, role: user_exist.role
+                email, jenis_institusi: user_exist.jenis_institusi, nama_institusi: user_exist.nama_institusi, jabatan: user_exist.jabatan, no_telp: user_exist.no_telp, nama_lengkap: user_exist.nama_lengkap, role: user_exist.role
             })
             res.cookie('access_token', access_token, {
                 httpOnly: true,
@@ -82,7 +82,7 @@ const user_service = {
 
             return {
                 _id: user_exist._id,
-                email, jenis_instansi: user_exist.jenis_instansi, nama_instansi: user_exist.nama_instansi, jabatan: user_exist.jabatan, no_telp: user_exist.no_telp, nama_lengkap: user_exist.nama_lengkap, role: user_exist.role
+                email, jenis_institusi: user_exist.jenis_institusi, nama_institusi: user_exist.nama_institusi, jabatan: user_exist.jabatan, no_telp: user_exist.no_telp, nama_lengkap: user_exist.nama_lengkap, role: user_exist.role
             }
 
         } catch (err) {
