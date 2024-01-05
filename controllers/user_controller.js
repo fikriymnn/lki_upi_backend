@@ -5,47 +5,49 @@ const { generate_access_token } = require('../utils/jwt')
 const user_controller = {
    register: async (req, res) => {
       try {
-         const { password, email, jenis_institusi, nama_institusi, no_telp, nama_lengkap } = req.body
-         if (!password && !email && !nama_institusi && !no_telp && !nama_lengkap && !jenis_institusi) {
-            throw {
-               status: 400,
-               message: "Incomplete input data."
-            }
-         }
-         const user_exist = await User.findOne({ email })
+         const body = req.body
+         console.log(body)
+        
+         const user_exist = await User.findOne({ email: body.email })
          if (user_exist) {
-            throw {
+            console.log(0)
+            return res.status(400).json({
                status: 400,
                message: "User was exist."
-            }
+            })
          }
-         const hash_password = await bcrypt.hash(password, 10)
-         const new_user = new User({ email, password: hash_password, nama_lengkap, nama_institusi, jenis_institusi, no_telp })
+         console.log(1)
+         const hash_password = await bcrypt.hash(body.password, 10)
+         const new_user = new User({ 
+            email:body.email,
+            password: hash_password,
+            nama_lengkap: body.nama_lengkap, 
+            nama_institusi: body.nama_institusi,
+            jenis_institusi: body.jenis_institusi,
+             no_telp: body.no_telp,
+              no_whatsapp:body.no_whatsapp,
+              program_studi:body.program_studi,
+              fakultas:body.fakultas})
          await new_user.save()
-
-         const user = await User.findOne({ email })
-         const access_token = generate_access_token({ _id: user._id, email, role: user.role, jenis_institusi, nama_institusi, no_telp, nama_lengkap })
-
+         console.log(2)
+         const user = await User.findOne({ email:body.email })
+         const access_token = generate_access_token({ _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, nama_lengkap: body.nama_lengkap })
+         console.log(3)
          res.cookie("access_token", access_token, {
             httpOnly: true,
-            path: "/"
          })
-
+         console.log(4)
          res.status(200).json({
             success: true,
             data: {
-               _id: user._id,
-               email,
-               nama_lengkap,
-               jenis_institusi,
-               nama_institusi,
-               no_telp, role: "user"
+               _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, nama_lengkap: body.nama_lengkap
             }
          })
-
+         return 
 
       } catch (err) {
-         res.status(500).json({
+         console.log(err.message)
+         return res.status(500).json({
             success: false,
             message: err.message
          })
@@ -54,75 +56,118 @@ const user_controller = {
    },
    login: async (req, res) => {
       try {
+         console.log(0)
+         if (req.cookies.access_token) {
+            return res.status(200).json({
+                status: 200,
+                message: "Login successfully"
+             })
+          }
          const { password, email } = req.body
          if (!password && !email) {
-            throw {
+           return res.status(400).json({
                status: 400,
                message: "Incomplete input data."
-            }
+            })
          }
+         console.log(1)
 
-         const user_exist = await User.findOne({ email })
-         if (!user_exist) {
-            throw {
+         const user = await User.findOne({ email })
+         console.log(2)
+         if (!user) {
+            return res.status(400).json({
                status: 400,
                message: "User is not exist."
-            }
+            })
          }
-         const compare = await bcrypt.compare(password, user_exist.password)
+         console.log(3)
+         const compare = await bcrypt.compare(password, user.password)
          if (!compare) {
-            throw {
+            return res.status(400).json({
                status: 400,
                message: "Wrong password."
-            }
+            })
          }
+         console.log(4)
          const access_token = generate_access_token({
-            _id: user_exist._id,
-            email, jenis_institusi: user_exist.jenis_institusi, nama_institusi: user_exist.nama_institusi, jabatan: user_exist.jabatan, no_telp: user_exist.no_telp, nama_lengkap: user_exist.nama_lengkap, role: user_exist.role
+            _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap
          })
          res.cookie('access_token', access_token, {
             httpOnly: true,
             path: "/"
          })
 
-
-         res.status(200).json({
+         console.log(5)
+         return res.status(200).json({
             success: true,
             data: {
-               _id: user_exist._id,
-               email, jenis_institusi: user_exist.jenis_institusi, nama_institusi: user_exist.nama_institusi, jabatan: user_exist.jabatan, no_telp: user_exist.no_telp, nama_lengkap: user_exist.nama_lengkap, role: user_exist.role
+               _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap
             }
          })
       } catch (err) {
-         res.status(500).json({
+         console.log(err.message)
+         return res.status(500).json({
             success: false,
             message: err.message
          })
       }
    },
-   get_user: async (req) => {
+   get_user: async (req,res) => {
       try {
+         console.log(req.cookies)
          const data = req.user
-         res.status(200).json({
-            success: true,
-            data
-         })
+         if(!data){
+            res.status(200).json({
+               success: false,
+               data: "user is not exist"
+            })
+         }else{
+            return res.status(200).json({
+               success: true,
+               data
+            })
+         }
+         
       } catch (err) {
-         res.status(500).json({
+         return res.status(500).json({
             success: false,
             message: err.message
          })
       }
    },
-   logout: async (res) => {
+   logout: async (req,res) => {
       try {
+         if(!req.cookies.access_token){
+            return res.status(200).json({
+               success: false,
+               message: "Logout failed!"
+            })
+         }
          res.clearCookie('access_token')
-         res.status(200).json({
+
+         return res.status(200).json({
             success: true,
             message: "Logout successfully!"
          })
       } catch (err) {
-         res.status(500).json({
+         return res.status(500).json({
+            success: false,
+            message: err.message
+         })
+      }
+   },
+   update_user: async(req,res)=>{
+      try{
+         const body = req.body
+         const _id = req.params
+         await User.updateOne({_id},body)
+         return res.status(200).json({
+            success: true,
+            data: "Update user successfully"
+         })
+
+      }catch(err){
+         return res.status(500).json({
             success: false,
             message: err.message
          })

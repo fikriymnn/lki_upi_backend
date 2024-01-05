@@ -16,6 +16,10 @@ const invoice_schema = new mongoose.Schema({
     no_invoice : {
         type: String
     },
+    id_user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     total_harga: {
         type: Number
     },

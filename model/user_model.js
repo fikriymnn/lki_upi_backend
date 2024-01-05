@@ -15,7 +15,11 @@ const user_schema = new mongoose.Schema({
         required:true
     },
     no_telp :{
-        type:String,
+        type:Number,
+        required:true
+    },
+    no_whatsapp :{
+        type:Number,
         required:true
     },
     jenis_institusi : {
@@ -24,7 +28,12 @@ const user_schema = new mongoose.Schema({
     },
     nama_institusi : {
         type:String,
-        required:true
+    },
+    program_studi : {
+        type: String
+    },
+    fakultas: {
+        type: String
     },
     role:{
         type:String,

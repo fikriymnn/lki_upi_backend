@@ -3,6 +3,10 @@ const objId = mongoose.Schema.Types.ObjectId
 const month_bahasa = require("../utils/month_bahasa")
 
 const order_schema = new mongoose.Schema({
+    id_user: {
+        type: objId,
+        ref: "User"
+    },
     date: {
         type: Date,
         default: new Date().toISOString()
@@ -17,9 +21,6 @@ const order_schema = new mongoose.Schema({
     },
     no_invoice: {
         type: String
-    },
-    harga: {
-        type: Number,
     },
     jenis_pengujian: {
         type : String,
@@ -42,7 +43,7 @@ const order_schema = new mongoose.Schema({
     pelarut: {
         type: String
     },
-    preparasi_sample : {
+    preparasi_khusus : {
         type: Boolean
     },
     target_senyawa : {
@@ -54,13 +55,20 @@ const order_schema = new mongoose.Schema({
     jurnal_pendukung : {
         type : Buffer
     },
-    keterangan: {
-        type: String
+    deskripsi_sample: {
+        type: String,
+        
+    },
+    foto_sample: {
+       type:Buffer,
+       contentType:String,
+       originalName:String
     },
     hasil_analisis: {
-        type: Buffer
-    }
-    
+        type: Buffer,
+        contentType:String,
+        originalName:String
+    },
 })
 
 module.exports = mongoose.model("Order",order_schema)

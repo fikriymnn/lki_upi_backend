@@ -9,9 +9,6 @@ const jenis_pengujian_schema = new mongoose.Schema({
     },
     jenis_institusi: {
         type: String
-    },
-    harga: {
-        type: Number
     }
 })
 

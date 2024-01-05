@@ -5,7 +5,7 @@ const auth_middleware = {
         try{
             const token = req.cookies.access_token
             if(!token){
-                res.status(401).json({
+                return res.status(401).json({
                     success:false,
                     status_code: 401,
                     message: "Access token is not exist."
@@ -13,7 +13,7 @@ const auth_middleware = {
             }
             jwt.verify(token,process.env.ACC_TOKEN_SECRET,(err,payload)=>{
                 if(err){
-                    res.status(403).json({
+                    return res.status(403).json({
                         success:false,
                         status_code: 403,
                         message: "Access token invalid."
@@ -24,7 +24,7 @@ const auth_middleware = {
             })
 
         }catch(err){
-            res.status(500).json({
+            return res.status(500).json({
                 success:false,
                 status_code: 500,
                 message:err.message
@@ -36,14 +36,14 @@ const auth_middleware = {
         try{
             const user = req.user
             if(!user){
-                res.status(403).json({
+                return  res.status(403).json({
                     success:false,
                     status_code: 403,
                     message: "Access token invalid."
                 })
             }
             if(user.role!=="admin"){
-                res.status(403).json({
+                return res.status(403).json({
                     success:false,
                     status_code: 403,
                     message: "You are not permitted to access"
@@ -52,7 +52,7 @@ const auth_middleware = {
 
             next()
         }catch(err){
-            res.status(500).json({
+            return res.status(500).json({
                 success:false,
                 status_code: 500,
                 message:err.message
@@ -64,14 +64,14 @@ const auth_middleware = {
         try{
             const user = req.user
             if(!user){
-                res.status(403).json({
+                return res.status(403).json({
                     success: false,
                     status_code: 403,
                     message: "Access token invalid."
                 })
             }
             if(user.role!=="operator"){
-                res.status(403).json({
+                return res.status(403).json({
                     success:false,
                     status_code: 403,
                     message: "You are not permitted to access"
@@ -80,7 +80,7 @@ const auth_middleware = {
 
             next()
         }catch(err){
-            res.status(500).json({
+            return res.status(500).json({
                 success:false,
                 status_code: 500,
                 message:err.message
