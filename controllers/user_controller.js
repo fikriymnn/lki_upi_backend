@@ -59,6 +59,7 @@ const user_controller = {
          console.log(0)
          if (req.cookies.access_token) {
             return res.status(200).json({
+               success:true,
                 status: 200,
                 message: "Login successfully"
              })
@@ -67,6 +68,7 @@ const user_controller = {
          if (!password && !email) {
            return res.status(400).json({
                status: 400,
+               success:false,
                message: "Incomplete input data."
             })
          }
@@ -77,6 +79,7 @@ const user_controller = {
          if (!user) {
             return res.status(400).json({
                status: 400,
+               success:false,
                message: "User is not exist."
             })
          }
@@ -85,6 +88,7 @@ const user_controller = {
          if (!compare) {
             return res.status(400).json({
                status: 400,
+               success:false,
                message: "Wrong password."
             })
          }

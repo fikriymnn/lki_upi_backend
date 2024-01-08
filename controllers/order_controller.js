@@ -1,48 +1,79 @@
 const Order = require("../model/order_model")
+const Invoice = require("../model/invoice_model")
 const month_bahasa = require("../utils/month_bahasa")
 
 const order_controller = {
     get_order: async (req) => {
         try {
             const { id } = req.params
-            const { skip, limit, status_pengujian, kode_pengujian, jenis_pengujian } = req.query
+            const { skip, limit, status_pengujian, kode_pengujian, jenis_pengujian,id_user,from,to,month,year } = req.query
 
             if (id) {
-                const data = await Order.findOne({ _id: id })
+                const data = await Invoice.findOne({ _id: id }).populate("id_user")
                 res.status(200).json({
                     success: true,
                     data
                 })
 
             } else if (skip && limit) {
-                const data = await Order.find().skip(skip).limit(limit)
-                const length_data = await Order.find()
+                const data = await Invoice.aggregate([{$lookup: {
+                    from: "users",
+                    localField:"id_user",
+                    foreignField:"_id",
+                    as:"id_user"
+                }}]).skip(skip).limit(limit)
+                const length_data = await Invoice.find()
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,
                     data
                 })
-            } else if (skip && limit && (status_pengujian || kode_pengujian || jenis_pengujian)) {
+            } else if (skip && limit && (status_pengujian || kode_pengujian || jenis_pengujian || id_user||from||to||month||year)) {
                 let obj = {}
                 if (status_pengujian) {
-                    obj.status_pengujian = status_pengujian
+                    obj.$match.status_pengujian = status_pengujian
                 }
                 if (kode_pengujian) {
-                    obj.kode_pengujian = kode_pengujian
+                    obj.$match.kode_pengujian = kode_pengujian
                 }
                 if (jenis_pengujian) {
-                    obj.jenis_pengujian = jenis_pengujian
+                    obj.$match.jenis_pengujian = jenis_pengujian
+                }if (id_user) {
+                    obj.$match.id_user = id_user
+                }if(from&&to){
+                    obj.$match.date = {$lt:to,$gt:from}
+                }if (year) {
+                    obj.$match.year = year
+                }if (month) {
+                    obj.$match.month = month
                 }
 
-                const data = await Order.find(obj).skip(skip).limit(limit)
-                const length_data = await Order.find(obj)
+                const data = await Invoice.aggregate([
+                    obj,
+                    {
+                        $lookup: {
+                        from: "users",
+                        localField:"id_user",
+                        foreignField:"_id",
+                        as:"id_user"
+                         }
+                    }
+                ]).skip(skip).limit(limit)
+                const length_data = await Invoice.find(obj)
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,
                     data
                 })
             } else {
-                const data = await Order.find()
+                const data = await Invoice.aggregate([ {
+                    $lookup: {
+                    from: "users",
+                    localField:"id_user",
+                    foreignField:"_id",
+                    as:"id_user"
+                     }
+                }])
                 res.status(200).json({
                     success: true,
                     data
@@ -65,32 +96,30 @@ const order_controller = {
             const current_year = new Date().getFullYear()
             const current_month = month_bahasa(new Date().getMonth())
             let no_urut = 0
+            let no_urut_kp = 0
+
             const data_order = await Order.find({ year: current_year })
+            const data_month = await Order.find({ kode_pengujian: kode, year: current_year, month: current_month })
             if (data_order) {
                 no_urut = data_order.length
             }
-
-            const order_jenis_pengujian = async (kode) => {
-                const data_month = await Order.find({ kode_pengujian: kode, year: current_year, month: current_month })
-                let no = data_month.length + 1
-                return no
+            if(data_month){
+                no_urut_kp = data_month.length
             }
+            let invoice = `${no_urut+1}/LKI/UPI/${current_year}`
+
 
             body.forEach((parent) => {
                 parent.jenis_pengujian.forEach((child) => {
                     async function jenis_pengujian() {
                         let obj = {}
-                        no_urut++
-                        let invoice = `${no_urut}/LKI/UPI/${current_year}`
-                        let no_urut_kp = await order_jenis_pengujian(child.kode_pengujian)
+                        no_urut_kp++
                         let kode = `${child.kode_pengujian}-${current_month}/${current_year}/${no_urut_kp}`
-                        
+
                         obj.id_user = parent.id_user
-                        obj.harga = child.harga
                         obj.no_invoice = invoice;
                         obj.jenis_pengujian = child.jenis_pengujian
                         obj.kode_pengujian = kode
-                        obj.status = parent.status_pengujian
                         obj.nama_sample = parent.nama_sample
                         obj.jumlah_sample = parent.jumlah_sample
                         obj.wujud_sample = parent.wujud_sample
@@ -107,12 +136,9 @@ const order_controller = {
                     jenis_pengujian()
 
                 })
-
-
-
             })
-
             await Order.insertMany(arr)
+            const new_invoice = new Invoice({no_invoice:invoice,})
             res.status(200).json({
                 success:true,
                 data: "Add order successfully!"

@@ -29,12 +29,9 @@ const invoice_schema = new mongoose.Schema({
     status: {
         type : String
     },
-    items: [
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref: "Order"
-        }
-    ]
+    items: {
+        type: Array
+    }
 
 })
 

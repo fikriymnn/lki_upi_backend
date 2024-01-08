@@ -45,7 +45,7 @@ app.post('/api/generate-word-document', async (req, res) => {
     });
 });
 
-app.get('/api/generate-invoice', async (req, res) => {
+app.get('/api/generate-invoice/:id', async (req, res) => {
     // 1. read template file
     const templateFile = fs.readFileSync('./public/doc/template/invoice.docx');
 

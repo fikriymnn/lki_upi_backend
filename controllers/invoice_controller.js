@@ -1,0 +1,123 @@
+const Invoice = require("../model/invoice_model")
+const month_bahasa = require("../utils/month_bahasa")
+
+const invoice_controller = {
+    get_invoice: async (req) => {
+        try {
+            const { id } = req.params
+            const { skip, limit, status,id_user,from,to,no_invoice,month,year } = req.query
+
+            if (id) {
+                const data = await Invoice.findOne({ _id: id }).populate("id_user")
+                res.status(200).json({
+                    success: true,
+                    data
+                })
+
+            } else if (skip && limit) {
+                const data = await Invoice.aggregate([{$lookup: {
+                    from: "users",
+                    localField:"id_user",
+                    foreignField:"_id",
+                    as:"id_user"
+                }}]).skip(skip).limit(limit)
+                const length_data = await Invoice.find()
+                res.status(200).json({
+                    success: true,
+                    length_total: length_data.length,
+                    data
+                })
+            } else if (skip && limit && (status || no_invoice || id_user||from||to||month||year)) {
+                let obj = {}
+                if (status) {
+                    obj.$match.status = status
+                }if (id_user) {
+                    obj.$match.id_user = id_user
+                }if(no_invoice){
+                    obj.$match.no_invoice = no_invoice
+                }if(from&&to){
+                    obj.$match.date = {$lt:to,$gt:from}
+                }if (year) {
+                    obj.$match.year = year
+                }if (month) {
+                    obj.$match.month = month
+                }
+
+                const data = await Invoice.aggregate([
+                    obj,
+                    {
+                        $lookup: {
+                        from: "users",
+                        localField:"id_user",
+                        foreignField:"_id",
+                        as:"id_user"
+                         }
+                    }
+                ]).skip(skip).limit(limit)
+                const length_data = await Invoice.find(obj)
+                res.status(200).json({
+                    success: true,
+                    length_total: length_data.length,
+                    data
+                })
+            } else {
+                const data = await Invoice.aggregate([ {
+                    $lookup: {
+                    from: "users",
+                    localField:"id_user",
+                    foreignField:"_id",
+                    as:"id_user"
+                     }
+                }])
+                res.status(200).json({
+                    success: true,
+                    data
+                })
+            }
+
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+
+    },
+    update_invoice: async (req, res) => {
+        try {
+            const { id } = req.params
+            const body = req.body
+            await Invoice.updateOne({ _id: id }, body)
+            const data = await Invoice.findOne({ _id: id })
+            res.status(200).json({
+                success: true,
+                message: "Update successfully!",
+                data
+            })
+
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    }, delete_invoice: async (req, res) => {
+        try {
+            const { id } = req.params
+            await Invoice.deleteOne({ _id: id })
+            res.status(200).json({
+                success: true,
+                message: "Delete successfully!",
+
+            })
+
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    }
+}
+
+module.exports = invoice_controller
