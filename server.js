@@ -20,6 +20,7 @@ app.use(cors({credentials: true, origin: true }))
 app.use(body_parser.json())
 app.use(body_parser.urlencoded({extended:true}))
 app.use(cookie_parser())
+
 app.use("/api",require('./routes/router'))
 
 app.post('/api/generate-word-document', async (req, res) => {

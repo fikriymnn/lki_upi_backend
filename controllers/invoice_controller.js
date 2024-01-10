@@ -2,7 +2,7 @@ const Invoice = require("../model/invoice_model")
 const month_bahasa = require("../utils/month_bahasa")
 
 const invoice_controller = {
-    get_invoice: async (req) => {
+    get_invoice: async (req,res) => {
         try {
             const { id } = req.params
             const { skip, limit, status,id_user,from,to,no_invoice,month,year } = req.query
