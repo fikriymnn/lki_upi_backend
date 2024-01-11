@@ -5,7 +5,9 @@ const invoice_controller = {
     get_invoice: async (req,res) => {
         try {
             const { id } = req.params
-            const { skip, limit, status,id_user,from,to,no_invoice,month,year } = req.query
+            let { skip, limit, status,id_user,from,to,no_invoice,month,year } = req.query
+            skip = parseInt(skip)
+            limit = parseInt(limit)
 
             if (id) {
                 const data = await Invoice.findOne({ _id: id }).populate("id_user")
@@ -14,47 +16,40 @@ const invoice_controller = {
                     data
                 })
 
-            } else if (skip && limit) {
-                const data = await Invoice.aggregate([{$lookup: {
-                    from: "users",
-                    localField:"id_user",
-                    foreignField:"_id",
-                    as:"id_user"
-                }}]).skip(skip).limit(limit)
-                const length_data = await Invoice.find()
+            }else if (skip && limit && (status || no_invoice || id_user||from||to||month||year)) {
+                let obj = {}
+                if (status) {
+                    obj.status = status
+                }if (id_user) {
+                    obj.id_user = id_user
+                }if(no_invoice){
+                    obj.no_invoice = no_invoice
+                }if(from&&to){
+                    obj.date = {$lt:to,$gt:from}
+                }if (year) {
+                    obj.year = year
+                }if (month) {
+                    obj.month = month
+                }
+                console.log('skip')
+
+                const data = await Invoice.find(obj).skip(skip).limit(limit)
+                console.log('skip')
+                const length_data = await Invoice.find(obj)
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,
                     data
                 })
-            } else if (skip && limit && (status || no_invoice || id_user||from||to||month||year)) {
-                let obj = {}
-                if (status) {
-                    obj.$match.status = status
-                }if (id_user) {
-                    obj.$match.id_user = id_user
-                }if(no_invoice){
-                    obj.$match.no_invoice = no_invoice
-                }if(from&&to){
-                    obj.$match.date = {$lt:to,$gt:from}
-                }if (year) {
-                    obj.$match.year = year
-                }if (month) {
-                    obj.$match.month = month
-                }
-
-                const data = await Invoice.aggregate([
-                    obj,
-                    {
-                        $lookup: {
-                        from: "users",
-                        localField:"id_user",
-                        foreignField:"_id",
-                        as:"id_user"
-                         }
-                    }
-                ]).skip(skip).limit(limit)
-                const length_data = await Invoice.find(obj)
+            } else if (skip && limit) {
+                console.log('skip')
+                const data = await Invoice.aggregate([{$lookup: {
+                    from: "users",
+                    localField:"id_user",
+                    foreignField:"_id",
+                    as:"id_user"
+                }}]).skip(skip.to).limit(limit)
+                const length_data = await Invoice.find()
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,

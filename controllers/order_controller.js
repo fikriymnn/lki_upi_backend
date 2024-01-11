@@ -3,72 +3,64 @@ const Invoice = require("../model/invoice_model")
 const month_bahasa = require("../utils/month_bahasa")
 
 const order_controller = {
-    get_order: async (req) => {
+    get_order: async (req,res) => {
         try {
             const { id } = req.params
-            const { skip, limit, status_pengujian, kode_pengujian, jenis_pengujian, id_user, from, to, month, year } = req.query
+            let { skip, limit, status_pengujian, kode_pengujian, jenis_pengujian, id_user, from, to, month, year,no_invoice } = req.query
+            skip = parseInt(skip)
+            limit = parseInt(limit)
 
             if (id) {
-                const data = await Invoice.findOne({ _id: id }).populate("id_user")
+                const data = await Order.findOne({ _id: id }).populate("id_user")
                 res.status(200).json({
                     success: true,
                     data
                 })
 
+            }else if (skip && limit && ( status_pengujian || kode_pengujian || jenis_pengujian || id_user || from || to || month || year||no_invoice)) {
+                let obj = {}
+                if (status_pengujian) {
+                    obj.status_pengujian = status_pengujian
+                }
+                if (kode_pengujian) {
+                    obj.kode_pengujian = kode_pengujian
+                }
+                if (jenis_pengujian) {
+                    obj.jenis_pengujian = jenis_pengujian
+                } if (id_user) {
+                    obj.id_user = id_user
+                } if (from && to) {
+                    obj.date = { $lt: to, $gt: from }
+                } if (year) {
+                    obj.year = year
+                } if (month) {
+                    obj.month = month
+                }
+                if(no_invoice){
+                   obj.no_invoice = no_invoice
+                }
+                console.log(obj)
+
+                const data = await Order.find(obj).skip(skip).limit(limit)
+                const length_data = await Order.find(obj)
+                res.status(200).json({
+                    success: true,
+                    length_total: length_data.length,
+                    data
+                })
             } else if (skip && limit) {
-                const data = await Invoice.aggregate([{
-                    $lookup: {
-                        from: "users",
-                        localField: "id_user",
-                        foreignField: "_id",
-                        as: "id_user"
-                    }
-                }]).skip(skip).limit(limit)
+                const data = await Order.aggregate().skip(skip).limit(limit)
                 const length_data = await Invoice.find()
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,
                     data
                 })
-            } else if (skip && limit && (status_pengujian || kode_pengujian || jenis_pengujian || id_user || from || to || month || year)) {
-                let obj = {}
-                if (status_pengujian) {
-                    obj.$match.status_pengujian = status_pengujian
-                }
-                if (kode_pengujian) {
-                    obj.$match.kode_pengujian = kode_pengujian
-                }
-                if (jenis_pengujian) {
-                    obj.$match.jenis_pengujian = jenis_pengujian
-                } if (id_user) {
-                    obj.$match.id_user = id_user
-                } if (from && to) {
-                    obj.$match.date = { $lt: to, $gt: from }
-                } if (year) {
-                    obj.$match.year = year
-                } if (month) {
-                    obj.$match.month = month
-                }
-
-                const data = await Invoice.aggregate([
-                    obj,
-                    {
-                        $lookup: {
-                            from: "users",
-                            localField: "id_user",
-                            foreignField: "_id",
-                            as: "id_user"
-                        }
-                    }
-                ]).skip(skip).limit(limit)
-                const length_data = await Invoice.find(obj)
-                res.status(200).json({
-                    success: true,
-                    length_total: length_data.length,
-                    data
-                })
             } else {
-                const data = await Invoice.aggregate([{
+                console.log(skip)
+                console.log(limit)
+                console.log(no_invoice)
+                const data = await Order.aggregate([{
                     $lookup: {
                         from: "users",
                         localField: "id_user",
@@ -94,12 +86,12 @@ const order_controller = {
     add_order: async (req, res) => {
         try {
             const body = req.body
-            const current_year = new Date().getFullYear()
-            const month = new Date().getMonth()
+            const current_year = new Date().getFullYear().toString()
+            const month = new Date().getMonth().toString()
             const current_month = month_bahasa(new Date().getMonth())
             let no_urut = 0
 
-            const data_order = await Invoice.find({ year: current_year })
+            const data_order = await Invoice.find({ year: new Date().getFullYear() })
 
             if (data_order.length >= 1) {
                 no_urut = data_order.length
@@ -108,76 +100,60 @@ const order_controller = {
             let invoice = `${no_urut + 1}/LKI/UPI/${current_year}`
 
             let arr = []
-            body.forEach(async(parent, i) => {
-                parent.jenis_pengujian.forEach(async (child) => {
-                    try {
-                        // console.log(child)
-
-                        // console.log(data)
-
-                        async function jenis_pengujian() {
-                            const data = await Order.find({ jenis_pengujian: child.jenis_pengujian })
-    
-                            console.log(data.length)
+            async function jenis_pengujian() {
+                let jp = []
+                var no = 0;
+                for (let i = 0; i < req.body.length; i++) {
+                    
+                    for (let a = 0; a < req.body[i].jenis_pengujian.length; a++) {
+                        try {   
+                            if(jp.includes(req.body[i].jenis_pengujian[a].jenis_pengujian)){
+                                jp.forEach((v)=>{
+                                    if(v==req.body[i].jenis_pengujian[a].jenis_pengujian){
+                                        no++
+                                    }
+                                })
+                            }
+                            jp.push(req.body[i].jenis_pengujian[a].jenis_pengujian)
+                            const data = await Order.find({ jenis_pengujian: req.body[i].jenis_pengujian[a].jenis_pengujian, year: current_year, month: month })
                             let obj = {}
-                            let kode = `${child.kode_pengujian}-${current_month}/${current_year}/${data.length + 1}`
-                            obj.year = current_year,
-                            obj.month = month,
+                            let kode = `${req.body[i].jenis_pengujian[a].kode_pengujian}-${current_month}/${current_year}/${data.length + no + 1}`
                             obj.id_user = req.user._id
                             obj.no_invoice = invoice;
-                            obj.jenis_pengujian = child.jenis_pengujian
+                            obj.jenis_pengujian = req.body[i].jenis_pengujian[a].jenis_pengujian
                             obj.kode_pengujian = kode
-                            obj.nama_sample = parent.nama_sample
-                            obj.jumlah_sample = parent.jumlah_sample
-                            obj.wujud_sample = parent.wujud_sample
-                            obj.pelarut = parent.pelarut
-                            obj.preparasi_khusus = parent.preparasi_khusus
-                            obj.target_senyawa = parent.target_senyawa
-                            obj.metode_parameter = parent.metode_parameter
-                            obj.jurnal_pendukung = parent.jurnal_pendukung
-                            obj.deskripsi_sample = parent.deskripsi_sample
-                            obj.foto_sample = parent.foto_sample
-                            obj.hasil_analisis = parent.hasil_analisis
-                           
+                            obj.nama_sample = req.body[i].nama_sample
+                            obj.jumlah_sample = req.body[i].jumlah_sample
+                            obj.wujud_sample = req.body[i].wujud_sample
+                            obj.pelarut = req.body[i].pelarut
+                            obj.preparasi_khusus = req.body[i].preparasi_khusus
+                            obj.target_senyawa = req.body[i].target_senyawa
+                            obj.metode_parameter = req.body[i].metode_parameter
+                            obj.jurnal_pendukung = req.body[i].jurnal_pendukung
+                            obj.deskripsi_sample = req.body[i].deskripsi_sample
+                            obj.foto_sample = req.body[i].foto_sample
+                            // obj.hasil_analisis = req.body[i].hasil_analisis
                             arr.push(obj)
+                            no=0
+                        } catch (err) {
+                            console.log(err)
                         }
-                        jenis_pengujian()
-
-                    } catch (err) {
-                        console.log(err)
                     }
-
+                }
+                return true
+            }
+            const arry = await jenis_pengujian()
+            if(arry==true){
+                console.log(req.body[0].jenis_pengujian[0])
+                await Order.insertMany(arr)
+                const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu verifikasi", items: arr })
+                await new_invoice.save()
+                return res.status(200).json({
+                    success: true,
+                    data: arr
                 })
-
-                if (body.length == i+1) {
-                    console.log(`body lenght ${body.length}`)
-                    async function post() {
-                       
-
-                }
-                post()
-
-                }
-            })
-            setTimeout(()=>{
-                async function postdata(){
-                    await Order.insertMany(arr)
-                    const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu verifikasi", items: arr })
-                    await new_invoice.save()
-                    return res.status(200).json({
-                        success: true,
-                        data: arr
-                    })
-                }
-                postdata()
-            }, 4000)
-
-            
-
-
-
-
-
+            }
+           
 
         } catch (err) {
             res.status(500).json({
