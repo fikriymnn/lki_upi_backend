@@ -6,9 +6,9 @@ const order_controller = {
     get_order: async (req,res) => {
         try {
             const { id } = req.params
-            let { skip, limit, status_pengujian, kode_pengujian, jenis_pengujian, id_user, from, to, month, year,no_invoice } = req.query
-            skip = parseInt(skip)
-            limit = parseInt(limit)
+            const { skip, limit, status_pengujian, kode_pengujian, jenis_pengujian, id_user, from, to, month, year,no_invoice } = req.query
+            // skip = parseInt(skip)
+            // limit = parseInt(limit)
 
             if (id) {
                 const data = await Order.findOne({ _id: id }).populate("id_user")
@@ -17,7 +17,8 @@ const order_controller = {
                     data
                 })
 
-            }else if (skip && limit && ( status_pengujian || kode_pengujian || jenis_pengujian || id_user || from || to || month || year||no_invoice)) {
+            }else if(skip && limit && ( status_pengujian || kode_pengujian || jenis_pengujian || id_user || from || to || month || year||no_invoice)) {
+                console.log(`selection`)
                 let obj = {}
                 if (status_pengujian) {
                     obj.status_pengujian = status_pengujian
@@ -49,6 +50,7 @@ const order_controller = {
                     data
                 })
             } else if (skip && limit) {
+                console.log(`${skip} ${limit}`)
                 const data = await Order.aggregate().skip(skip).limit(limit)
                 const length_data = await Invoice.find()
                 res.status(200).json({
@@ -57,9 +59,11 @@ const order_controller = {
                     data
                 })
             } else {
-                console.log(skip)
-                console.log(limit)
-                console.log(no_invoice)
+                console.log(`all`)
+                console.log(`${skip} ${limit}`)
+                // console.log(skip)
+                // console.log(limit)
+                // console.log(no_invoice)
                 const data = await Order.aggregate([{
                     $lookup: {
                         from: "users",
@@ -146,7 +150,7 @@ const order_controller = {
             if(arry==true){
                 console.log(req.body[0].jenis_pengujian[0])
                 await Order.insertMany(arr)
-                const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu verifikasi", items: arr })
+                const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu form dikonfirmasi",s1_date: new Date()})
                 await new_invoice.save()
                 return res.status(200).json({
                     success: true,

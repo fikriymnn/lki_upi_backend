@@ -29,6 +29,30 @@ const invoice_schema = new mongoose.Schema({
     status: {
         type : String
     },
+    s1_date: {
+        type: Date
+    },
+    s2_date: {
+        type: Date
+    },
+    s3_date: {
+        type: Date
+    },
+    s4_date: {
+        type: Date
+    },
+    s5_date: {
+        type: Date
+    },
+    s6_date: {
+        type: Date
+    },
+    s7_date: {
+        type: Date
+    },
+    s8_date: {
+        type: Date
+    },
     items: {
         type: Array
     }
