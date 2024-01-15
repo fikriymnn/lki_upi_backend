@@ -50,8 +50,7 @@ const order_controller = {
                     data
                 })
             } else if (skip && limit) {
-                console.log(`${skip} ${limit}`)
-                const data = await Order.aggregate().skip(skip).limit(limit)
+                const data = await Order.find().skip(skip).limit(limit)
                 const length_data = await Invoice.find()
                 res.status(200).json({
                     success: true,
@@ -59,19 +58,8 @@ const order_controller = {
                     data
                 })
             } else {
-                console.log(`all`)
-                console.log(`${skip} ${limit}`)
-                // console.log(skip)
-                // console.log(limit)
-                // console.log(no_invoice)
-                const data = await Order.aggregate([{
-                    $lookup: {
-                        from: "users",
-                        localField: "id_user",
-                        foreignField: "_id",
-                        as: "id_user"
-                    }
-                }])
+
+                const data = await Order.find()
                 res.status(200).json({
                     success: true,
                     data
@@ -111,17 +99,17 @@ const order_controller = {
                     
                     for (let a = 0; a < req.body[i].jenis_pengujian.length; a++) {
                         try {   
-                            if(jp.includes(req.body[i].jenis_pengujian[a].jenis_pengujian)){
+                            if(jp.includes(req.body[i].jenis_pengujian[a])){
                                 jp.forEach((v)=>{
-                                    if(v==req.body[i].jenis_pengujian[a].jenis_pengujian){
+                                    if(v==req.body[i].jenis_pengujian[a]){
                                         no++
                                     }
                                 })
                             }
-                            jp.push(req.body[i].jenis_pengujian[a].jenis_pengujian)
-                            const data = await Order.find({ jenis_pengujian: req.body[i].jenis_pengujian[a].jenis_pengujian, year: current_year, month: month })
+                            jp.push(req.body[i].jenis_pengujian[a])
+                            const data = await Order.find({ jenis_pengujian: req.body[i].jenis_pengujian[a], year: current_year, month: month })
                             let obj = {}
-                            let kode = `${req.body[i].jenis_pengujian[a].kode_pengujian}-${current_month}/${current_year}/${data.length + no + 1}`
+                            let kode = `${req.body[i].kode_pengujian[a]}-${current_month}/${current_year}/${data.length + no + 1}`
                             obj.id_user = req.user._id
                             obj.no_invoice = invoice;
                             obj.jenis_pengujian = req.body[i].jenis_pengujian[a].jenis_pengujian

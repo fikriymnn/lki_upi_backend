@@ -1,17 +1,22 @@
 const  mongoose = require("mongoose")
+const month_bahasa = require("../utils/month_bahasa")
 
 const invoice_schema = new mongoose.Schema({
     date: {
         type: Date,
         default: new Date().toISOString()
     },
-    year: {
+    date_format: {
         type: Date,
-        default: new Date().getFullYear()
+        default: `${new Date().getDay()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
+    },
+    year: {
+        type: String,
+        default: new Date().getFullYear().toString()
     },
     month: {
-        type: Date,
-        default: new Date().getMonth()
+        type: String,
+        default: new Date().getMonth().toString()
     },
     no_invoice : {
         type: String

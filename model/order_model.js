@@ -1,8 +1,6 @@
 const mongoose = require('mongoose')
 const objId = mongoose.Schema.Types.ObjectId
 const month_bahasa = require("../utils/month_bahasa")
-const year = new Date().getFullYear().toString()
-const month = new Date().getMonth().toString()
 
 const order_schema = new mongoose.Schema({
     id_user: {
@@ -13,13 +11,17 @@ const order_schema = new mongoose.Schema({
         type: Date,
         default: new Date().toISOString()
     },
+    date_format: {
+        type: Date,
+        default: `${new Date().getDay()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
+    },
     year: {
         type: String,
-        default: year
+        default: new Date().getFullYear().toString()
     },
     month: {
         type: String,
-        default: month
+        default: new Date().getMonth().toString()
     },
     no_invoice: {
         type: String

@@ -14,6 +14,12 @@ const XlsxTemplate = require('xlsx-template');
 console.log(__dirname);
 const URL = process.env.DATABASE_URL
 const PORT = process.env.PORT || 5000
+try{
+    mongoose.connect(URL)
+}catch(err){
+    console.log(err.message)
+}
+
 
 
 app.use(cors({credentials: true, origin: true }))
@@ -23,104 +29,104 @@ app.use(cookie_parser())
 
 app.use("/api",require('./routes/router'))
 
-app.post('/api/generate-word-document', async (req, res) => {
-    // 1. read template file
-    const templateFile = fs.readFileSync('./public/doc/template/LaporanHasil.docx');
+// app.post('/api/generate-word-document', async (req, res) => {
+//     // 1. read template file
+//     const templateFile = fs.readFileSync('./public/doc/template/LaporanHasil.docx');
 
-    // 2. process the template
-    const data = req.body
-    const handler = new TemplateHandler();
-    const doc = await handler.process(templateFile, data);
+//     // 2. process the template
+//     const data = req.body
+//     const handler = new TemplateHandler();
+//     const doc = await handler.process(templateFile, data);
 
-    // 3. send output
-    const fileName = `${new Date().toISOString().slice(0, 10)}-${data.nama.replace(" ", "_")}.docx`
-    const filePath = path.join(__dirname, `/public/doc/hasil/${fileName}`);
-    fs.writeFileSync(filePath, doc);
-    console.log(filePath);
-    res.download(`${filePath}`, fileName, (err) => {
-        if (err) {
-            console.error(err);
-            res.status(500).send('Internal server error');
-            fs.unlinkSync(`${filePath}`);
-        }
-    });
-});
+//     // 3. send output
+//     const fileName = `${new Date().toISOString().slice(0, 10)}-${data.nama.replace(" ", "_")}.docx`
+//     const filePath = path.join(__dirname, `/public/doc/hasil/${fileName}`);
+//     fs.writeFileSync(filePath, doc);
+//     console.log(filePath);
+//     res.download(`${filePath}`, fileName, (err) => {
+//         if (err) {
+//             console.error(err);
+//             res.status(500).send('Internal server error');
+//             fs.unlinkSync(`${filePath}`);
+//         }
+//     });
+// });
 
-app.get('/api/generate-invoice/:id', async (req, res) => {
-    // 1. read template file
-    const templateFile = fs.readFileSync('./public/doc/template/invoice.docx');
+// app.get('/api/generate-invoice/:id', async (req, res) => {
+//     // 1. read template file
+//     const templateFile = fs.readFileSync('./public/doc/template/invoice.docx');
 
-    // 2. process the template
-    const data = {
-        nama: "Sumanto",
-        instansi:"UPI/KIMIA",
-        nosurat:"LK/231/12/2024/01",
-        tanggal:"32/12/2024",
-        deskripsi:"Analisis GMCH",
-        jumlah:2,
-        hs:300000,
-        jb:600000,
-        total:600000
-    }
-    const handler = new TemplateHandler();
-    const doc = await handler.process(templateFile, data);
+//     // 2. process the template
+//     const data = {
+//         nama: "Sumanto",
+//         instansi:"UPI/KIMIA",
+//         nosurat:"LK/231/12/2024/01",
+//         tanggal:"32/12/2024",
+//         deskripsi:"Analisis GMCH",
+//         jumlah:2,
+//         hs:300000,
+//         jb:600000,
+//         total:600000
+//     }
+//     const handler = new TemplateHandler();
+//     const doc = await handler.process(templateFile, data);
 
-    // 3. send output
-    const fileName = `${new Date().toISOString().slice(0, 10)}-${data.nama.replace(" ", "_")}.docx`
-    const filePath = path.join(__dirname, `/public/doc/template/${fileName}`);
+//     // 3. send output
+//     const fileName = `${new Date().toISOString().slice(0, 10)}-${data.nama.replace(" ", "_")}.docx`
+//     const filePath = path.join(__dirname, `/public/doc/template/${fileName}`);
 
-    fs.writeFileSync(filePath, doc);
-    res.download(`${filePath}`, fileName, (err) => {
-        if (err) {
-            console.error({ err });
-            res.status(500).send('Internal server error');
-            fs.unlinkSync(`${filePath}`);
-        }
-    });
-});
+//     fs.writeFileSync(filePath, doc);
+//     res.download(`${filePath}`, fileName, (err) => {
+//         if (err) {
+//             console.error({ err });
+//             res.status(500).send('Internal server error');
+//             fs.unlinkSync(`${filePath}`);
+//         }
+//     });
+// });
 
-app.post('/api/generate-excel', async (req, res) => {
+// app.post('/api/generate-excel', async (req, res) => {
 
-    fs.readFile(path.join('./public/xlsx/template/bon.xlsx'), function (err, data) {
+//     fs.readFile(path.join('./public/xlsx/template/bon.xlsx'), function (err, data) {
 
-        // Create a template
-        var template = new XlsxTemplate(data);
+//         // Create a template
+//         var template = new XlsxTemplate(data);
 
-        // Replacements take place on first sheet
-        var sheetNumber = 1;
+//         // Replacements take place on first sheet
+//         var sheetNumber = 1;
 
-        // Set up some placeholder values matching the placeholders in the template
-        var values = {
-            tanggal: '2023-11-22',
-            penerima: 'gilang',
-            jenis_jasa: 'cek tanah',
-            total: 20000,
-            tgltanda: "bandung,24 mei 2024"
-        };
-        console.log("2")
-        // Perform substitution
-        template.substitute(sheetNumber, values);
+//         // Set up some placeholder values matching the placeholders in the template
+//         var values = {
+//             tanggal: '2023-11-22',
+//             penerima: 'gilang',
+//             jenis_jasa: 'cek tanah',
+//             total: 20000,
+//             tgltanda: "bandung,24 mei 2024"
+//         };
+//         console.log("2")
+//         // Perform substitution
+//         template.substitute(sheetNumber, values);
 
-        // Get binary data
-        var data = template.generate();
-        const fileName = `${new Date().toISOString().slice(0, 10)}-${values.penerima.replace(" ", "_")}.xlsx`
-        const filePath = path.join(__dirname, `./public/xlsx/output/${fileName}`);
-        console.log("3")
-        fs.writeFileSync(filePath, data, 'binary');
+//         // Get binary data
+//         var data = template.generate();
+//         const fileName = `${new Date().toISOString().slice(0, 10)}-${values.penerima.replace(" ", "_")}.xlsx`
+//         const filePath = path.join(__dirname, `./public/xlsx/output/${fileName}`);
+//         console.log("3")
+//         fs.writeFileSync(filePath, data, 'binary');
 
-        console.log("4")
-        res.download(`${filePath}`, fileName, (err) => {
-            if (err) {
-                console.error({ err });
-                res.status(500).send('Internal server error');
-                fs.unlinkSync(`${filePath}`);
-            }
-            console.log("download berhasil");
-        });
-    })
-})
+//         console.log("4")
+//         res.download(`${filePath}`, fileName, (err) => {
+//             if (err) {
+//                 console.error({ err });
+//                 res.status(500).send('Internal server error');
+//                 fs.unlinkSync(`${filePath}`);
+//             }
+//             console.log("download berhasil");
+//         });
+//     })
+// })
 
-mongoose.connect(URL)
+
 app.listen(PORT,()=>{
     console.log(`Server running on port ${PORT}`)
 })
