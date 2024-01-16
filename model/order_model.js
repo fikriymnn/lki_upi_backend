@@ -59,7 +59,9 @@ const order_schema = new mongoose.Schema({
         type : String
     },
     jurnal_pendukung : {
-        type : Buffer
+        type : Buffer,
+        contentType:String,
+        originalName:String
     },
     deskripsi_sample: {
         type: String,

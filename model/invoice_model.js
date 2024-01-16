@@ -7,7 +7,7 @@ const invoice_schema = new mongoose.Schema({
         default: new Date().toISOString()
     },
     date_format: {
-        type: Date,
+        type: String,
         default: `${new Date().getDay()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
     },
     year: {
@@ -35,28 +35,28 @@ const invoice_schema = new mongoose.Schema({
         type : String
     },
     s1_date: {
-        type: Date
+        type: String
     },
     s2_date: {
-        type: Date
+        type: String
     },
     s3_date: {
-        type: Date
+        type: String
     },
     s4_date: {
-        type: Date
+        type: String
     },
     s5_date: {
-        type: Date
+        type: String
     },
     s6_date: {
-        type: Date
+        type: String
     },
     s7_date: {
-        type: Date
+        type: String
     },
     s8_date: {
-        type: Date
+        type: String
     },
     items: {
         type: Array

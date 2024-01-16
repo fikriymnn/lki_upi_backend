@@ -9,7 +9,7 @@ const invoice_controller = {
             const { skip, limit, status, id_user, from, to, no_invoice, month, year } = req.query
 
             if (id) {
-                const data = await Invoice.findOne({_id:id}).populate('id_user')
+                const data = await Invoice.findOne({_id:id}).populate('id_user').select({id_user:{_id: 0}});
                 console.log(data)
                 res.status(200).json({
                     success: true,

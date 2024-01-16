@@ -77,7 +77,6 @@ const order_controller = {
 
     add_order: async (req, res) => {
         try {
-            const body = req.body
             const current_year = new Date().getFullYear().toString()
             const month = new Date().getMonth().toString()
             const current_month = month_bahasa(new Date().getMonth())
@@ -158,7 +157,17 @@ const order_controller = {
     update_order: async (req, res) => {
         try {
             const { id } = req.params
+            let obj = {}
             const body = req.body
+            // if(req.files.jurnal_pendukung){
+            //     body.jurnal_pendukung= req.files.jurnal_pendukung
+            // }
+            // if(req.files.foto_sample){
+            //     body.foto_sample= req.files.foto_sample
+            // }
+            // if(req.files.hasil_analisis){
+            //     body.hasil_analisis= req.files.hasil_analisis
+            // }
             await Order.updateOne({ _id: id }, body)
             const data = await Order.findOne({ _id: id })
             res.status(200).json({
