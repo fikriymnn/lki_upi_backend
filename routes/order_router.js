@@ -1,6 +1,7 @@
 const router = require("express").Router()
 const order_controller = require('../controllers/order_controller')
 const {auth} = require('../middlewares/auth')
+const multer = require("multer")
 
 router.get("/order/:id?",order_controller.get_order)
 router.post("/order",auth,order_controller.add_order)

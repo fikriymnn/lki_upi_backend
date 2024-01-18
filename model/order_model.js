@@ -1,6 +1,12 @@
 const mongoose = require('mongoose')
 const objId = mongoose.Schema.Types.ObjectId
 const month_bahasa = require("../utils/month_bahasa")
+function timeNow() {
+    var d = new Date(),
+      h = (d.getHours()<10?'0':'') + d.getHours(),
+      m = (d.getMinutes()<10?'0':'') + d.getMinutes();
+   return h + ':' + m;
+  }
 
 const order_schema = new mongoose.Schema({
     id_user: {
@@ -13,7 +19,7 @@ const order_schema = new mongoose.Schema({
     },
     date_format: {
         type: Date,
-        default: `${new Date().getDay()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
+        default: `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
     },
     year: {
         type: String,
@@ -27,12 +33,7 @@ const order_schema = new mongoose.Schema({
         type: String
     },
     jenis_pengujian: {
-        jenis_pengujian: {
             type:String
-        },
-        kode_pegujian:{
-            type:String
-        }
     },
     kode_pengujian: {
         type: String
@@ -50,7 +51,8 @@ const order_schema = new mongoose.Schema({
         type: String
     },
     preparasi_khusus : {
-        type: String
+        type: Boolean,
+        default: false
     },
     target_senyawa : {
         type: String
@@ -59,25 +61,25 @@ const order_schema = new mongoose.Schema({
         type : String
     },
     jurnal_pendukung : {
-        type : Buffer,
-        contentType:String,
-        originalName:String
+       type:String
     },
     deskripsi_sample: {
         type: String,
         
     },
     foto_sample: {
-       type:Buffer,
-       contentType:String,
-       originalName:String
+       type:String
     },
     hasil_analisis: {
-        type: Buffer,
-        contentType:String,
-        originalName:String
+       type:String
     },
 })
+
+// jurnal_pendukung : {
+//     data : Buffer,
+//     contentType:String,
+//     originalName:String
+// }
 
 module.exports = mongoose.model("Order",order_schema)
 

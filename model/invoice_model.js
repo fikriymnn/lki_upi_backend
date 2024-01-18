@@ -1,5 +1,13 @@
 const  mongoose = require("mongoose")
 const month_bahasa = require("../utils/month_bahasa")
+function timeNow() {
+    var d = new Date(),
+      h = (d.getHours()<10?'0':'') + d.getHours(),
+      m = (d.getMinutes()<10?'0':'') + d.getMinutes();
+   return h + ':' + m;
+  }
+const dateFormat = `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
+
 
 const invoice_schema = new mongoose.Schema({
     date: {
@@ -8,7 +16,7 @@ const invoice_schema = new mongoose.Schema({
     },
     date_format: {
         type: String,
-        default: `${new Date().getDay()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
+        default: dateFormat
     },
     year: {
         type: String,
@@ -34,8 +42,12 @@ const invoice_schema = new mongoose.Schema({
     status: {
         type : String
     },
+    bukti_pembayaran: {
+        type : String
+    },
     s1_date: {
-        type: String
+        type: String,
+        default: `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
     },
     s2_date: {
         type: String
@@ -58,10 +70,10 @@ const invoice_schema = new mongoose.Schema({
     s8_date: {
         type: String
     },
-    items: {
-        type: Array
+    success: {
+        type: Boolean,
+        default : false
     }
-
 })
 
 module.exports = mongoose.model("Invoice",invoice_schema)

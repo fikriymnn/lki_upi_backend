@@ -3,35 +3,35 @@ const Order = require("../model/order_model.js")
 const month_bahasa = require("../utils/month_bahasa")
 const { TemplateHandler } = require('easy-template-x');
 const XlsxTemplate = require('xlsx-template');
+const fs = require('fs')
+const path = require('path');
 
 const invoice_controller = {
     get_invoice: async (req, res) => {
         try {
-            const { no_invoice } = req.params
-            const invoice = await Invoice.aggregate([
-                { $match: { no_invoice: no_invoice } },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "id_user",
-                        foreignField: "_id",
-                        as: "id_user"
-                    }
-                }
-            ])
-            const data_invoice = invoice[0]
-
+            const { no_invoice } = req.query
+            const invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate("id_user")
+  
+console.log('1')
             async function jp_function() {
+                console.log('2')
+                let list_jp = []
                 let data_pesan = []
-                const order = await Order.findOne({ no_invoice: data_invoice.no_invoice })
+                const order = await Order.find({ no_invoice: no_invoice })
+                console.log(order)
+                console.log('3')
                 order.forEach((v, i) => {
-                        obj = {jumlah:0}
-                        obj.deskripsi = v.data_pesan[i]
-                        v.data_pesan.forEach((v2)=>{
-                          if(v.data_pesan[i]==v2){
-                            obj.jumlah += 1
-                          }
-                        })
+                        let obj = {jumlah:0}
+                        obj.deskripsi = `Analisis ${v.jenis_pengujian}`
+                        
+                        list_jp.forEach((v2)=>{
+                            if(v2==v.jenis_pengujian){
+                              obj.jumlah += 1
+                            }
+                          })
+                          obj.jumlah += 1
+                        list_jp.push(v.jenis_pengujian)
+                       
                         obj.hs = '-'
                         obj.jb = '-'
                         data_pesan.push(obj)
@@ -39,25 +39,25 @@ const invoice_controller = {
                 return data_pesan
             }
             const pesan = await jp_function()
-            
+            console.log('5')  
             if (pesan) {
-                const templateFile = fs.readFileSync('../templates/invoice.docx');
-
+                const templateFile = fs.readFileSync('./templates/invoice.docx');
+                console.log('1')
                 // 2. process the template
                 const data = {
-                    nama: data_invoice.id_user.nama_lengkap,
-                    instansi: data_invoice.id_user.nama_institusi,
-                    nosurat: data_invoice.no_invoice,
-                    tanggal: data_invoice.date_format,
+                    nama: invoice.id_user.nama_lengkap,
+                    instansi: invoice.id_user.nama_institusi,
+                    nosurat: no_invoice,
+                    tanggal: invoice.date_format,
                     pesan: pesan,
-                    total: data_invoice.total_harga
+                    total: invoice.total_harga
                 }
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, data);
 
                 // 3. send output
-                const fileName = `${new Date().toISOString().slice(0, 10)}-${data_invoice.id_user.nama_lengkap.replace(" ", "_")}.docx`
-                const filePath = path.join(__dirname, `/templates/${fileName}`);
+                const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.docx`
+                const filePath = path.join(`./templates/${fileName}`);
                 fs.writeFileSync(filePath, doc);
                 return res.download(`${filePath}`, fileName, (err) => {
                     if (err) {
