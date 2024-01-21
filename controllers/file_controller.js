@@ -162,6 +162,42 @@ console.log('1')
         }
 
     },
+    foto_sample: async (req,res)=>{
+        try{  
+            const {buffer,mimetype,originalname} = req.file
+            const obj = {
+                data: buffer,
+                contentType: mimetype,
+                originalName:originalname
+            }
+            await Order.updateOne({_id:req.params.id},obj)
+            res.send("success")
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    },
+    download_foto_sample: async (req,res)=>{
+        try{  
+            const dataorder =await Order.findOne({_id:req.parms.id})
+            const data = dataorder.foto_sample
+
+            res.setHeader("Content-Type", data.contentType);
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename=${data.originalName}`
+            );
+            res.send(data.buffer)            
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    }
+
 
 }
 

@@ -68,7 +68,9 @@ const order_schema = new mongoose.Schema({
         
     },
     foto_sample: {
-       type:String
+       data:Buffer,
+       contentType:String,
+       originalName:String
     },
     hasil_analisis: {
        type:String
