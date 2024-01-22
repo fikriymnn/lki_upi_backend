@@ -12,14 +12,14 @@ const invoice_controller = {
             const { no_invoice } = req.query
             const invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate("id_user")
   
-console.log('1')
+
             async function jp_function() {
-                console.log('2')
+                
                 let list_jp = []
                 let data_pesan = []
                 const order = await Order.find({ no_invoice: no_invoice })
                 console.log(order)
-                console.log('3')
+                
                 order.forEach((v, i) => {
                         let obj = {jumlah:0}
                         obj.deskripsi = `Analisis ${v.jenis_pengujian}`
@@ -39,10 +39,10 @@ console.log('1')
                 return data_pesan
             }
             const pesan = await jp_function()
-            console.log('5')  
+              
             if (pesan) {
                 const templateFile = fs.readFileSync('./templates/invoice.docx');
-                console.log('1')
+                
                 // 2. process the template
                 const data = {
                     nama: invoice.id_user.nama_lengkap,
@@ -59,12 +59,17 @@ console.log('1')
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.docx`
                 const filePath = path.join(`./templates/${fileName}`);
                 fs.writeFileSync(filePath, doc);
+
+    
+                
+            
                 return res.download(`${filePath}`, fileName, (err) => {
                     if (err) {
                         console.error({ err });
                         res.status(500).send('Internal server error');
                         fs.unlinkSync(`${filePath}`);
                     }
+                
                     fs.unlinkSync(filePath);
                 })
             }
@@ -78,23 +83,15 @@ console.log('1')
     },
     get_kuitansi: async (req, res) => {
         try {
-            const { no_invoice } = req.params
-            const invoice = await Invoice.aggregate([
-                { $match: { no_invoice: no_invoice } },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "id_user",
-                        foreignField: "_id",
-                        as: "id_user"
-                    }
-                }
-            ])
-            const data_invoice = invoice[0]
+            const { no_invoice } = req.query
+           console.log(no_invoice)
+            const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
+            
             async function deskripsi_function() {
                 let deskripsi = "Analisis"
                 let jenis_pengujian = []
-                const order = await Order.findOne({ no_invoice: data_invoice.no_invoice })
+                const order = await Order.find({ no_invoice: data_invoice.no_invoice })
+            
                 order.forEach((v, i) => {
                     if (!jenis_pengujian.includes(v.jenis_pengujian)) {
                         deskripsi += ` ${v.jenis_pengujian}`
@@ -104,9 +101,12 @@ console.log('1')
                 return deskripsi
             }
             const deskripsi = await deskripsi_function()
+            console.log('1')
+            console.log(deskripsi)
             if(deskripsi){
-                  fs.readFile(path.join('../templates/bon.xlsx'), function (err, data) {
-
+                console.log('2')
+                  fs.readFile(path.join('./templates/bon.xlsx'), function (err, data) {
+                    console.log('2')
                     // Create a template
                     var template = new XlsxTemplate(data);
             
@@ -114,21 +114,30 @@ console.log('1')
                     var sheetNumber = 1;
             
                     // Set up some placeholder values matching the placeholders in the template
+                    var dateString = data_invoice.s8_date.split(' ')
                     var values = {
                         tanggal: data_invoice.no_invoice,
-                        penerima: data_invoice.id_user.nama_lengkap,
+                        penerima: data_invoice?.id_user?.nama_lengkap,
                         jenis_jasa: deskripsi,
                         total: data_invoice.total_harga,
-                        tgltanda: `Bandung, ${data_invoice.s8_date.getDay()} ${month_bahasa(data_invoice.s8_date.getMonth())} ${data_invoice.s8_date.getFullYear()}`
+                        tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`
                     };
+                    console.log('3')
+                    console.log(dateString)
                     // Perform substitution
                     template.substitute(sheetNumber, values);
-            
+                    console.log(dateString)
+                    console.log('1')
                     // Get binary data
+                    if(values){
+
+                    }
                     var data = template.generate();
-                    const fileName = `${new Date().toISOString().slice(0, 10)}-${values.penerima.replace(" ", "_")}.xlsx`
+                    const fileName = `${data_invoice?.id_user?.nama_lengkap?.replace(" ","_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}_kuitansi.xlsx`
                     const filePath = path.join(__dirname, `../templates/${fileName}`);
+                    console.log('2')
                     fs.writeFileSync(filePath, data, 'binary');
+                    console.log('3')
                     res.download(`${filePath}`, fileName, (err) => {
                         if (err) {
                             console.error({ err });
@@ -137,6 +146,8 @@ console.log('1')
                         }
                         fs.unlinkSync(filePath);
                     });
+                  
+                    
                 })
             }
 
@@ -170,7 +181,7 @@ console.log('1')
                 contentType: mimetype,
                 originalName:originalname
             }
-            await Order.updateOne({_id:req.params.id},obj)
+            await Order.updateOne({_id:req.params.id},{foto_sample: obj})
             res.send("success")
         }catch(err){
             res.status(500).json({
@@ -181,15 +192,123 @@ console.log('1')
     },
     download_foto_sample: async (req,res)=>{
         try{  
-            const dataorder =await Order.findOne({_id:req.parms.id})
+            const dataorder =await Order.findOne({_id:req.params.id})
             const data = dataorder.foto_sample
+
+            res.setHeader("Content-Type", data.contentType);
+            res.setHeader("File-Name", data.originalName);
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename=${data.originalName}`
+            );
+            res.send(data.data)            
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    },
+    jurnal_pendukung: async (req,res)=>{
+        try{  
+            const {buffer,mimetype,originalname} = req.file
+            const obj = {
+                data: buffer,
+                contentType: mimetype,
+                originalName:originalname
+            }
+            await Order.updateOne({_id:req.params.id},{jurnal_pendukung: obj})
+            res.send("success")
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    },
+    download_jurnal_pendukung: async (req,res)=>{
+        try{  
+            const dataorder =await Order.findOne({_id:req.parms.id})
+            const data = dataorder.jurnal_pendukung
 
             res.setHeader("Content-Type", data.contentType);
             res.setHeader(
               "Content-Disposition",
               `attachment; filename=${data.originalName}`
             );
-            res.send(data.buffer)            
+            res.send(data.data)            
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    },
+    hasil_analisis: async (req,res)=>{
+        try{  
+            const {buffer,mimetype,originalname} = req.file
+            const obj = {
+                data: buffer,
+                contentType: mimetype,
+                originalName:originalname
+            }
+            await Order.updateOne({_id:req.params.id},{hasil_analisis: obj})
+            res.send("success")
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    },
+    download_hasil_analisis: async (req,res)=>{
+        try{  
+            const dataorder =await Order.findOne({_id:req.parms.id})
+            const data = dataorder.hasil_analisis
+
+            res.setHeader("Content-Type", data.contentType);
+            res.setHeader("File-Name", data.originalName);
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename=${data.originalName}`
+            );
+            res.send(data.data)            
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    },
+    bukti_pembayaran: async (req,res)=>{
+        try{  
+            const {buffer,mimetype,originalname} = req.file
+            const obj = {
+                data: buffer,
+                contentType: mimetype,
+                originalName:originalname
+            }
+            await Invoice.updateOne({_id:req.params.id},{bukti_pembayaran: obj})
+            res.send("success")
+        }catch(err){
+            res.status(500).json({
+                success: false,
+                message: err.message
+            })
+        }
+    },
+    download_bukti_pembayaran: async (req,res)=>{
+        try{  
+            const dataorder =await Invoice.findOne({_id:req.parms.id})
+            const data = dataorder.bukti_pembayaran
+
+            res.setHeader("Content-Type", data.contentType);
+            res.setHeader("File-Name", data.originalName);
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename=${data.originalName}`
+            );
+            res.send(data.data)            
         }catch(err){
             res.status(500).json({
                 success: false,
@@ -197,6 +316,7 @@ console.log('1')
             })
         }
     }
+
 
 
 }

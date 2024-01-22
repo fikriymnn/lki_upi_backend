@@ -43,7 +43,9 @@ const invoice_schema = new mongoose.Schema({
         type : String
     },
     bukti_pembayaran: {
-        type : String
+        data : Buffer,
+        originalName: String,
+        contentType: String
     },
     s1_date: {
         type: String,

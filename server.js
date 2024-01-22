@@ -20,9 +20,12 @@ try{
     console.log(err.message)
 }
 
+const corsOptions = {
+    exposedHeaders: 'Content-Disposition',credentials: true, origin: true 
+  }
 
 
-app.use(cors({credentials: true, origin: true }))
+app.use(cors(corsOptions))
 app.use(body_parser.json())
 app.use(body_parser.urlencoded({extended:true}))
 app.use(cookie_parser())

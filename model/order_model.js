@@ -61,7 +61,9 @@ const order_schema = new mongoose.Schema({
         type : String
     },
     jurnal_pendukung : {
-       type:String
+        data:Buffer,
+        contentType:String,
+        originalName:String
     },
     deskripsi_sample: {
         type: String,
@@ -73,7 +75,9 @@ const order_schema = new mongoose.Schema({
        originalName:String
     },
     hasil_analisis: {
-       type:String
+        data:Buffer,
+        contentType:String,
+        originalName:String
     },
 })
 

@@ -94,7 +94,8 @@ const order_controller = {
                   m = (d.getMinutes()<10?'0':'') + d.getMinutes();
                return h + ':' + m;
               }
-            const dateFormat = `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
+            const dateFormat = `${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
+            const dateFormatTgl = `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
             if (data_order.length >= 1) {
                 no_urut = data_order.length
             }
@@ -153,7 +154,7 @@ const order_controller = {
                 console.log(req.body[0].jenis_pengujian[0])
                 
                 await Order.insertMany(arr)
-                const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu form dikonfirmasi",s1_date:dateFormat,date_format:dateFormat})
+                const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu form dikonfirmasi",s1_date:dateFormatTgl,date_format:dateFormat})
                 await new_invoice.save()
                 return res.status(200).json({
                     success: true,
