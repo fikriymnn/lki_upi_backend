@@ -196,7 +196,7 @@ const invoice_controller = {
             const data = dataorder.foto_sample
 
             res.setHeader("Content-Type", data.contentType);
-            res.setHeader("File-Name", data.originalName);
+        
             res.setHeader(
               "Content-Disposition",
               `attachment; filename=${data.originalName}`
@@ -228,7 +228,7 @@ const invoice_controller = {
     },
     download_jurnal_pendukung: async (req,res)=>{
         try{  
-            const dataorder =await Order.findOne({_id:req.parms.id})
+            const dataorder =await Order.findOne({_id:req.params.id})
             const data = dataorder.jurnal_pendukung
 
             res.setHeader("Content-Type", data.contentType);
@@ -263,11 +263,11 @@ const invoice_controller = {
     },
     download_hasil_analisis: async (req,res)=>{
         try{  
-            const dataorder =await Order.findOne({_id:req.parms.id})
+            const dataorder =await Order.findOne({_id:req.params.id})
             const data = dataorder.hasil_analisis
 
             res.setHeader("Content-Type", data.contentType);
-            res.setHeader("File-Name", data.originalName);
+        
             res.setHeader(
               "Content-Disposition",
               `attachment; filename=${data.originalName}`
@@ -299,11 +299,11 @@ const invoice_controller = {
     },
     download_bukti_pembayaran: async (req,res)=>{
         try{  
-            const dataorder =await Invoice.findOne({_id:req.parms.id})
+            const dataorder =await Invoice.findOne({_id:req.params.id})
             const data = dataorder.bukti_pembayaran
 
             res.setHeader("Content-Type", data.contentType);
-            res.setHeader("File-Name", data.originalName);
+        
             res.setHeader(
               "Content-Disposition",
               `attachment; filename=${data.originalName}`
