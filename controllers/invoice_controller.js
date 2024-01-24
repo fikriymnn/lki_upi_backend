@@ -34,18 +34,19 @@ const invoice_controller = {
                     obj.month = month
                 }
                 if (success) {
-                    obj.success = success
+                    obj.success = success=="true"?true:false;
                 }
                 console.log('skip')
 
                 const data = await Invoice.aggregate([
                     {$match: obj}
                     ,
-                    {$lookup:{foreignField:'_id',localField:'id_user',from:'users'}},
+                    {$lookup:{foreignField:'_id',localField:'id_user',from:'users',as:'id_user'}},
                     {$sort:{_id:-1}}
                 ]).skip(s).limit(l)
                 console.log('skip')
-                const length_data = await Invoice.find(obj)
+                const length_data = await Invoice.aggregate([{$match:obj}])
+                console.log("cek")
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,
