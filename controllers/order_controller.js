@@ -42,7 +42,12 @@ const order_controller = {
                 }
                 console.log(obj)
 
-                const data = await Order.find(obj).skip(skip).limit(limit)
+                const data = await Order.aggregate([
+                    {$match: obj},
+                    {$sort: {_id:-1}}
+                    ,
+                    {$lookup:{foreignField:'_id',localField:'id_user',from:'users'}}
+                ]).skip(skip).limit(limit)
                 const length_data = await Order.find(obj)
                 res.status(200).json({
                     success: true,
@@ -50,7 +55,11 @@ const order_controller = {
                     data
                 })
             } else if (skip && limit) {
-                const data = await Order.find().skip(skip).limit(limit)
+                const data = await Order.aggregate([
+                    {$sort: {_id:-1}},
+                    
+                    {$lookup:{foreignField:'_id',localField:'id_user',from:'users'}}
+                ]).skip(skip).limit(limit)
                 const length_data = await Invoice.find().populate('id_user')
                 res.status(200).json({
                     success: true,
@@ -59,7 +68,10 @@ const order_controller = {
                 })
             } else {
 
-                const data = await Order.find().populate('id_user')
+                const data = await Order.aggregate([
+                    {$sort: {_id:-1}},
+                    {$lookup:{foreignField:'_id',localField:'id_user',from:'users'}}
+                ])
                 res.status(200).json({
                     success: true,
                     data
