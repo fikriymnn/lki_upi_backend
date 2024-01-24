@@ -38,7 +38,12 @@ const invoice_controller = {
                 }
                 console.log('skip')
 
-                const data = await Invoice.find(obj).populate('id_user').skip(s).limit(l)
+                const data = await Invoice.aggregate([
+                    {$match: obj}
+                    ,
+                    {$lookup:{foreignField:'_id',localField:'id_user',from:'users'}},
+                    {$sort:{_id:-1}}
+                ]).skip(s).limit(l)
                 console.log('skip')
                 const length_data = await Invoice.find(obj)
                 res.status(200).json({
@@ -55,7 +60,9 @@ const invoice_controller = {
                         foreignField: "_id",
                         as: "id_user"
                     }
-                }]).skip(skip).limit(limit)
+                },
+                {$sort:{_id:-1}}
+            ]).skip(skip).limit(limit)
                 const length_data = await Invoice.find()
                 res.status(200).json({
                     success: true,
@@ -70,7 +77,9 @@ const invoice_controller = {
                         foreignField: "_id",
                         as: "id_user"
                     }
-                }])
+                    
+                },
+                {$sort:{_id:-1}}])
                 res.status(200).json({
                     success: true,
                     data
