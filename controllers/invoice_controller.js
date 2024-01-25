@@ -63,7 +63,7 @@ const invoice_controller = {
                     }
                 },
                 {$sort:{_id:-1}}
-            ]).skip(skip).limit(limit)
+            ]).skip( parseInt(skip)).limit( parseInt(limit))
                 const length_data = await Invoice.find()
                 res.status(200).json({
                     success: true,
