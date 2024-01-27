@@ -90,7 +90,7 @@ const order_controller = {
 
     add_order: async (req, res) => {
         try {
-            // console.log(req.body)
+            console.log(req.body)
             // console.log(req.files)
             // console.log(req.file.jurnal_pendukung)
             // console.log(req.file)
@@ -136,6 +136,8 @@ const order_controller = {
                             const data = await Order.find({ jenis_pengujian: req.body[i].jenis_pengujian[a], year: current_year, month: month })
                             
                             let obj = {}
+                            console.log(req.body[i].foto_sample.data)
+                            console.log(req.body[i].jurnal_pendukung.data)
                             let kode = `${req.body[i].kode_pengujian[a]}-${current_month}/${current_year}/${data.length + no + 1}`
                             obj.id_user = req.user._id
                             obj.no_invoice = invoice;
@@ -149,8 +151,16 @@ const order_controller = {
                             obj.target_senyawa = req.body[i].target_senyawa
                             obj.metode_parameter = req.body[i].metode_parameter   
                             obj.deskripsi_sample = req.body[i].deskripsi_sample
-                            obj.foto_sample = req.body[i].foto_sample
-                            obj.jurnal_pendukung = req.body[i].jurnal_pendukung
+                            obj.foto_sample = {
+                                contentType: req.body[i]?.foto_sample.contentType,
+                                originalName: req.body[i]?.foto_sample.originalName,
+                                data : req.body[i].foto_sample.data
+                            }
+                            obj.jurnal_pendukung = {
+                                contentType: req.body[i].jurnal_pendukung?.contentType,
+                                originalName: req.body[i].jurnal_pendukung?.originalName,
+                                data : req.body[i].jurnal_pendukung?.data
+                            }
                             arr.push(obj)
                             no=0
                         } catch (err) {
