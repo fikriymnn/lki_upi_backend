@@ -32,6 +32,9 @@ const order_schema = new mongoose.Schema({
     no_invoice: {
         type: String
     },
+    uuid: {
+        type: String
+    },
     jenis_pengujian: {
             type:String
     },

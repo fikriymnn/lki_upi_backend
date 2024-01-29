@@ -176,13 +176,25 @@ const invoice_controller = {
     foto_sample: async (req,res)=>{
         try{  
             const {buffer,mimetype,originalname} = req.file
+            const {uuid} = req.query
             const obj = {
                 data: buffer,
                 contentType: mimetype,
                 originalName:originalname
             }
-            await Order.updateOne({_id:req.params.id},{foto_sample: obj})
+            console.log('cek file')
+            console.log(req.query.uuid)
+            if(req.params.id){
+                
+                await Order.updateOne({_id:req.params.id},{foto_sample: obj})
             res.send("success")
+
+            }else if(uuid){
+                console.log('cek file')
+                await Order.updateMany({uuid:uuid},{$set:{foto_sample: obj}})
+             res.send("success")
+            } 
+       
         }catch(err){
             res.status(500).json({
                 success: false,
@@ -212,13 +224,34 @@ const invoice_controller = {
     jurnal_pendukung: async (req,res)=>{
         try{  
             const {buffer,mimetype,originalname} = req.file
+            const {uuid} = req.query
             const obj = {
                 data: buffer,
                 contentType: mimetype,
                 originalName:originalname
             }
-            await Order.updateOne({_id:req.params.id},{jurnal_pendukung: obj})
-            res.send("success")
+            if(req.params.id){
+                try{
+                    await Order.updateOne({_id:req.params.id},{jurnal_pendukung: obj})
+                    res.send("success")
+                }catch(err){
+                    console.log(err.message)
+                }
+
+            }else if(uuid){
+                console.log(uuid)
+                console.log('cek file')
+                console.log(req.uuid)
+                try{
+                    await Order.updateMany({uuid:uuid},{$set:{jurnal_pendukung: obj}})
+                    res.send("success")
+                }catch(err){
+                    console.log(err.message)
+                }
+            
+                
+            }
+            
         }catch(err){
             res.status(500).json({
                 success: false,

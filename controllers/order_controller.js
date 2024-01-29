@@ -121,7 +121,7 @@ const order_controller = {
                 var no = 0;
                 for (let i = 0; i < req.body.length; i++) {
                     
-                    for (let a = 0; a < req.body[i].jenis_pengujian.length; a++) {
+                    for (let a = 0; a < req.body[i]?.jenis_pengujian?.length; a++) {
                         try {   
                             if(jp.includes(req.body[i].jenis_pengujian[a])){
                                 jp.forEach((v)=>{
@@ -136,8 +136,7 @@ const order_controller = {
                             const data = await Order.find({ jenis_pengujian: req.body[i].jenis_pengujian[a], year: current_year, month: month })
                             
                             let obj = {}
-                            console.log(req.body[i].foto_sample.data)
-                            console.log(req.body[i].jurnal_pendukung.data)
+                    
                             let kode = `${req.body[i].kode_pengujian[a]}-${current_month}/${current_year}/${data.length + no + 1}`
                             obj.id_user = req.user._id
                             obj.no_invoice = invoice;
@@ -151,16 +150,7 @@ const order_controller = {
                             obj.target_senyawa = req.body[i].target_senyawa
                             obj.metode_parameter = req.body[i].metode_parameter   
                             obj.deskripsi_sample = req.body[i].deskripsi_sample
-                            obj.foto_sample = {
-                                contentType: req.body[i]?.foto_sample.contentType,
-                                originalName: req.body[i]?.foto_sample.originalName,
-                                data : req.body[i].foto_sample.data
-                            }
-                            obj.jurnal_pendukung = {
-                                contentType: req.body[i].jurnal_pendukung?.contentType,
-                                originalName: req.body[i].jurnal_pendukung?.originalName,
-                                data : req.body[i].jurnal_pendukung?.data
-                            }
+                            obj.uuid = req.body[i].uuid
                             arr.push(obj)
                             no=0
                         } catch (err) {
@@ -181,8 +171,11 @@ const order_controller = {
                 await new_invoice.save()
                 return res.status(200).json({
                     success: true,
-                    data: arr
+                    data: new_invoice
                 })
+
+
+                
             }
         } catch (err) {
             console.log(err.message)
