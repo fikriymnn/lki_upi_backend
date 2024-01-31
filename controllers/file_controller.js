@@ -182,8 +182,6 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName:originalname
             }
-            console.log('cek file')
-            console.log(req.query.uuid)
             if(req.params.id){
                 
                 await Order.updateOne({_id:req.params.id},{foto_sample: obj})
@@ -204,7 +202,7 @@ const invoice_controller = {
     },
     download_foto_sample: async (req,res)=>{
         try{  
-            const dataorder =await Order.findOne({_id:req.params.id})
+            const dataorder = await Order.findOne({_id:req.params.id})
             const data = dataorder.foto_sample
 
             res.setHeader("Content-Type", data.contentType);
@@ -239,9 +237,7 @@ const invoice_controller = {
                 }
 
             }else if(uuid){
-                console.log(uuid)
-                console.log('cek file')
-                console.log(req.uuid)
+           
                 try{
                     await Order.updateMany({uuid:uuid},{$set:{jurnal_pendukung: obj}})
                     res.send("success")

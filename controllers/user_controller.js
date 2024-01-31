@@ -11,9 +11,9 @@ const user_controller = {
          const user_exist = await User.findOne({ email: body.email })
          if (user_exist) {
             console.log(0)
-            return res.status(400).json({
+           return res.status(200).json({
                status: 400,
-               message: "User was exist."
+               message: "Email telah digunakan."
             })
          }
          console.log(1)
@@ -24,10 +24,10 @@ const user_controller = {
             nama_lengkap: body.nama_lengkap, 
             nama_institusi: body.nama_institusi,
             jenis_institusi: body.jenis_institusi,
-             no_telp: body.no_telp,
-              no_whatsapp:body.no_whatsapp,
-              program_studi:body.program_studi,
-              fakultas:body.fakultas})
+            no_telp: body.no_telp,
+            no_whatsapp:body.no_whatsapp,
+            program_studi:body.program_studi,
+            fakultas:body.fakultas})
          await new_user.save()
          console.log(2)
          const user = await User.findOne({ email:body.email })
@@ -37,13 +37,13 @@ const user_controller = {
             httpOnly: true,
          })
          console.log(4)
-         res.status(200).json({
+         return res.status(200).json({
             success: true,
             data: {
                _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, nama_lengkap: body.nama_lengkap
             }
          })
-         return 
+        
 
       } catch (err) {
          console.log(err.message)
@@ -69,7 +69,7 @@ const user_controller = {
            return res.status(400).json({
                status: 400,
                success:false,
-               message: "Incomplete input data."
+               message: "email atau password salah."
             })
          }
          console.log(1)
@@ -80,7 +80,7 @@ const user_controller = {
             return res.status(400).json({
                status: 400,
                success:false,
-               message: "User is not exist."
+               message: "email tidak ditemukan."
             })
          }
          console.log(3)
@@ -89,7 +89,7 @@ const user_controller = {
             return res.status(400).json({
                status: 400,
                success:false,
-               message: "Wrong password."
+               message: "password salah."
             })
          }
          console.log(4)
