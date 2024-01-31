@@ -6,7 +6,7 @@ const order_controller = {
     get_order: async (req,res) => {
         try {
             const { id } = req.params
-            const { skip, limit, status_pengujian, kode_pengujian, jenis_pengujian, id_user, from, to, month, year,no_invoice } = req.query
+            const { report,skip, limit, status_pengujian, kode_pengujian, jenis_pengujian, id_user, from, to, month, year,no_invoice } = req.query
             // skip = parseInt(skip)
             // limit = parseInt(limit)
 
@@ -17,6 +17,48 @@ const order_controller = {
                     data
                 })
 
+            }else if(report && skip && limit && ( status_pengujian || kode_pengujian || jenis_pengujian || id_user || from || to || month || year||no_invoice)) {
+                console.log(`selection`)
+                let obj = {}
+                if (status_pengujian) {
+                    obj.status_pengujian = status_pengujian
+                }
+                if (kode_pengujian) {
+                    obj.kode_pengujian = kode_pengujian
+                }
+                if (jenis_pengujian) {
+                    obj.jenis_pengujian = jenis_pengujian
+                } if (id_user) {
+                    obj.id_user = id_user
+                } if (from && to) {
+                    obj.date = { $lt: to, $gt: from }
+                } if (year) {
+                    obj.year = year
+                } if (month) {
+                    obj.month = month
+                }
+                if(no_invoice){
+                   obj.no_invoice = no_invoice
+                }
+                console.log(obj)
+
+                const data = await Order.aggregate([
+                    {$match: obj},
+                    {$sort: {_id:-1}}
+                    ,
+                    {$lookup:{foreignField:'_id',localField:'id_user',from:'users',as:"id_user"}},
+                    {$project:{
+                        jurnal_pendukung: 0,
+                        foto_sample:0,
+                        hasil_analisis:0
+                    }}
+                ]).skip( parseInt(skip)).limit( parseInt(limit))
+                const length_data = await Order.aggregate([{$match:obj}])
+                res.status(200).json({
+                    success: true,
+                    length_total: length_data.length,
+                    data
+                })
             }else if(skip && limit && ( status_pengujian || kode_pengujian || jenis_pengujian || id_user || from || to || month || year||no_invoice)) {
                 console.log(`selection`)
                 let obj = {}
