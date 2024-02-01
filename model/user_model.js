@@ -15,11 +15,11 @@ const user_schema = new mongoose.Schema({
         required:true
     },
     no_telp :{
-        type:Number,
+        type:String,
         required:true
     },
     no_whatsapp :{
-        type:Number,
+        type:String,
         required:true
     },
     jenis_institusi : {

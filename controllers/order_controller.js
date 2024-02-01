@@ -231,7 +231,7 @@ const order_controller = {
     update_order: async (req, res) => {
         try {
             const { id } = req.params
-            let obj = {}
+          
             const body = req.body
             // if(req.files.jurnal_pendukung){
             //     body.jurnal_pendukung= req.files.jurnal_pendukung

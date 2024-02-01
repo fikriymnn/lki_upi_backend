@@ -31,7 +31,7 @@ const user_controller = {
          await new_user.save()
          console.log(2)
          const user = await User.findOne({ email:body.email })
-         const access_token = generate_access_token({ _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, nama_lengkap: body.nama_lengkap })
+         const access_token = generate_access_token({ _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, no_whatsapp: user.no_whatsapp,nama_lengkap: body.nama_lengkap })
          console.log(3)
          res.cookie("access_token", access_token, {
             httpOnly: true,
@@ -40,7 +40,7 @@ const user_controller = {
          return res.status(200).json({
             success: true,
             data: {
-               _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, nama_lengkap: body.nama_lengkap
+               _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, nama_lengkap: body.nama_lengkap,no_whatsapp: user.no_whatsapp
             }
          })
         
@@ -94,7 +94,7 @@ const user_controller = {
          }
          console.log(4)
          const access_token = generate_access_token({
-            _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap
+            _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp
          })
          res.cookie('access_token', access_token, {
             httpOnly: true,
@@ -105,7 +105,7 @@ const user_controller = {
          return res.status(200).json({
             success: true,
             data: {
-               _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap
+               _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp,
             }
          })
       } catch (err) {
@@ -163,11 +163,20 @@ const user_controller = {
    update_user: async(req,res)=>{
       try{
          const body = req.body
-         const _id = req.params
-         await User.updateOne({_id},body)
+         console.log(body)
+         const {id} = req.params
+         await User.updateOne({_id:id},body)
+         const user = await User.findOne({_id:id})
+         const access_token = generate_access_token({
+            _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp
+         })
+         res.cookie('access_token', access_token, {
+            httpOnly: true,
+            path: "/"
+         })
          return res.status(200).json({
             success: true,
-            data: "Update user successfully"
+            data: 'update successfully'
          })
 
       }catch(err){

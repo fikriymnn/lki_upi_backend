@@ -36,8 +36,8 @@ const invoice_schema = new mongoose.Schema({
     total_harga: {
         type: Number
     },
-    estimasi_harga: {
-        type: Number
+    estimasi_date: {
+        type: String
     },
     status: {
         type : String
