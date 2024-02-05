@@ -66,7 +66,7 @@ const user_controller = {
           }
          const { password, email } = req.body
          if (!password && !email) {
-           return res.status(400).json({
+           return res.status(200).json({
                status: 400,
                success:false,
                message: "email atau password salah."
@@ -77,7 +77,7 @@ const user_controller = {
          const user = await User.findOne({ email })
          console.log(2)
          if (!user) {
-            return res.status(400).json({
+            return res.status(200).json({
                status: 400,
                success:false,
                message: "email tidak ditemukan."
@@ -86,7 +86,7 @@ const user_controller = {
          console.log(3)
          const compare = await bcrypt.compare(password, user.password)
          if (!compare) {
-            return res.status(400).json({
+            return res.status(200).json({
                status: 400,
                success:false,
                message: "password salah."
