@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 
 const hasil_analisis_schema = new mongoose.Schema({
-   hasil_analsis:  {
+   hasil_analisis:  {
     data:Buffer,
     contentType:String,
     originalName:String

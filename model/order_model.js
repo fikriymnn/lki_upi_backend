@@ -64,23 +64,17 @@ const order_schema = new mongoose.Schema({
         type : String
     },
     jurnal_pendukung : {
-        data:Buffer,
-        contentType:String,
-        originalName:String
+        type:String
     },
     deskripsi_sample: {
         type: String,
         
     },
     foto_sample: {
-       data:Buffer,
-       contentType:String,
-       originalName:String
+       type: String
     },
     hasil_analisis: {
-        data:Buffer,
-        contentType:String,
-        originalName:String
+        type: String
     },
 })
 

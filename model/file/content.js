@@ -17,11 +17,11 @@ const content_schema = new mongoose.Schema({
     contentType:String,
     originalName:String
    },
-   contoh_hasil:[{
+   contoh_hasil:{
     data:Buffer,
     contentType:String,
     originalName:String
-   }]
+   }
 },
 {timestamps:true}
 )

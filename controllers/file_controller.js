@@ -188,7 +188,7 @@ const invoice_controller = {
             }
 
             console.log('cek file')
-            await Order.updateOne({uuid:id},{foto_sample:true})
+            await Order.updateOne({uuid:id},{foto_sample:mimetype})
             const newFile = new Foto_sample({
                 foto_sample: obj,
                 uuid: id
@@ -207,7 +207,7 @@ const invoice_controller = {
     download_foto_sample: async (req, res) => {
         try {
             const dataorder = await Foto_sample.findOne({ uuid: req.params.id })
-            const data = dataorder.foto_sample
+           
 
             res.setHeader("Content-Type", data.contentType);
 
@@ -215,7 +215,7 @@ const invoice_controller = {
                 "Content-Disposition",
                 `attachment; filename=${data.originalName}`
             );
-            res.send(data.data)
+            res.send(dataorder)
         } catch (err) {
             res.status(500).json({
                 success: false,
@@ -232,7 +232,7 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Order.updateOne({uuid:id},{jurnal_pendukung:true})
+            await Order.updateOne({uuid:id},{jurnal_pendukung:originalname})
             const newFile = new Jurnal_pendukung({
                 jurnal_pendukung: obj,
                 uuid: id
@@ -276,7 +276,7 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Order.updateOne({uuid:id},{hasil_analisis:true})
+            await Order.updateOne({uuid:id},{hasil_analisis:originalname})
             const newFile = new Hasil_analisis({
                 hasil_analsis: obj,
                 uuid: req.params.id
@@ -293,7 +293,7 @@ const invoice_controller = {
     download_hasil_analisis: async (req, res) => {
         try {
             const dataorder = await Hasil_analisis.findOne({ uuid: req.params.id })
-            const data = await dataorder.hasil_analisis
+            const data =  dataorder.hasil_analisis
 
             res.setHeader("Content-Type", data.contentType);
 
