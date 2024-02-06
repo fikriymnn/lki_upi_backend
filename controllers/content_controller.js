@@ -6,6 +6,7 @@ add_content: async (req,res)=>{
     try {
         console.log(req.files)
         const {title,sub_title,deskripsi} = req.body
+        console.log()
         const newContent = new Content({})
         return res.send('good')
     } catch (err) {

@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const content_controller = require('../controllers/content_controller')
-const {auth} = require('../middlewares/auth')
 
 router.post("/content",content_controller.add_content)
 router.delete("/content/:id",content_controller.delete_content)
