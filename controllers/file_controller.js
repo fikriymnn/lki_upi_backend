@@ -207,13 +207,14 @@ const invoice_controller = {
     download_foto_sample: async (req, res) => {
         try {
             const dataorder = await Foto_sample.find({ uuid: req.params.id })
+            console.log(dataorder)
            
 
-            res.setHeader("Content-Type", data.contentType);
+            res.setHeader("Content-Type", dataorder[0].foto_sample.contentType);
 
             res.setHeader(
                 "Content-Disposition",
-                `attachment; filename=${data.originalName}`
+                `attachment; filename=${dataorder[0].foto_sample.originalName}`
             );
             res.send(dataorder[0].foto_sample)
         } catch (err) {
