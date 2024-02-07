@@ -188,7 +188,7 @@ const invoice_controller = {
             }
 
             console.log('cek file')
-            await Order.updateOne({uuid:id},{foto_sample:mimetype})
+            await Order.updateMany({uuid:id},{foto_sample:mimetype})
             const newFile = new Foto_sample({
                 foto_sample: obj,
                 uuid: id
@@ -206,7 +206,7 @@ const invoice_controller = {
     },
     download_foto_sample: async (req, res) => {
         try {
-            const dataorder = await Foto_sample.findOne({ uuid: req.params.id })
+            const dataorder = await Foto_sample.find({ uuid: req.params.id })
            
 
             res.setHeader("Content-Type", data.contentType);
@@ -215,7 +215,7 @@ const invoice_controller = {
                 "Content-Disposition",
                 `attachment; filename=${data.originalName}`
             );
-            res.send(dataorder)
+            res.send(dataorder[0].foto_sample)
         } catch (err) {
             res.status(500).json({
                 success: false,
@@ -232,7 +232,7 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Order.updateOne({uuid:id},{jurnal_pendukung:originalname})
+            await Order.updateMany({uuid:id},{jurnal_pendukung:originalname})
             const newFile = new Jurnal_pendukung({
                 jurnal_pendukung: obj,
                 uuid: id
@@ -252,8 +252,8 @@ const invoice_controller = {
     },
     download_jurnal_pendukung: async (req, res) => {
         try {
-            const dataorder = await Jurnal_pendukung.findOne({ uuid: req.params.id })
-            const data = dataorder.jurnal_pendukung
+            const dataorder = await Jurnal_pendukung.find({ uuid: req.params.id })
+            const data = dataorder[0].jurnal_pendukung
 
             res.setHeader("Content-Type", data.contentType);
             res.setHeader(
@@ -276,7 +276,7 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Order.updateOne({uuid:id},{hasil_analisis:originalname})
+            await Order.updateMany({uuid:id},{hasil_analisis:originalname})
             const newFile = new Hasil_analisis({
                 hasil_analsis: obj,
                 uuid: req.params.id
@@ -292,8 +292,8 @@ const invoice_controller = {
     },
     download_hasil_analisis: async (req, res) => {
         try {
-            const dataorder = await Hasil_analisis.findOne({ uuid: req.params.id })
-            const data =  dataorder.hasil_analisis
+            const dataorder = await Hasil_analisis.find({ uuid: req.params.id })
+            const data =  dataorder[0].hasil_analisis
 
             res.setHeader("Content-Type", data.contentType);
 
