@@ -6,8 +6,6 @@ function timeNow() {
       m = (d.getMinutes()<10?'0':'') + d.getMinutes();
    return h + ':' + m;
   }
-const dateFormat = `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
-
 
 const invoice_schema = new mongoose.Schema({
     date: {
@@ -16,7 +14,7 @@ const invoice_schema = new mongoose.Schema({
     },
     date_format: {
         type: String,
-        default: dateFormat
+        
     },
     year: {
         type: String,

@@ -25,6 +25,7 @@ const content_controller = {
                     foto: obj,
                     contoh_hasil: obj2
                 })
+                console.log("success")
                 await newContent.save()
                 return res.send("success")
             } else {
@@ -50,6 +51,7 @@ const content_controller = {
                     contoh_hasil: obj
                 })
                 await newContent.save()
+                console.log("success")
                 return res.send("success")
             }
 
@@ -64,7 +66,7 @@ const content_controller = {
     },
     get_content: async (req, res) => {
         if (req.params.id) {
-            const data = await Content.findOne({ _id: id })
+            const data = await Content.findOne({ _id: req.params.id })
             res.json({
                 success: true,
                 data
@@ -96,7 +98,6 @@ const content_controller = {
                 success: true,
                 data: 'update successfully'
             })
-
         } catch (err) {
             return res.status(500).json({
                 success: false,
@@ -148,9 +149,8 @@ const content_controller = {
     },
     delete_content: async (req, res) => {
         try {
-            const body = req.body
             const { id } = req.params
-            await Content.delete({ _id: id })
+            await Content.deleteOne({ _id: id })
 
             return res.status(200).json({
                 success: true,

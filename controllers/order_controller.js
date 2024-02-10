@@ -192,6 +192,8 @@ const order_controller = {
                             obj.target_senyawa = req.body[i].target_senyawa
                             obj.metode_parameter = req.body[i].metode_parameter   
                             obj.deskripsi_sample = req.body[i].deskripsi_sample
+                            obj.riwayat_pengujian = req.body[i].riwayat_pengujian
+                            obj.sample_diambil = req.body[i].sample_diambil
                             obj.uuid = req.body[i].uuid
                             arr.push(obj)
                             no=0
@@ -209,7 +211,7 @@ const order_controller = {
                 console.log(req.body[0].jenis_pengujian[0])
                 
                 await Order.insertMany(arr)
-                const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu form dikonfirmasi",s1_date:dateFormatTgl,date_format:dateFormat})
+                const new_invoice = new Invoice({ no_invoice: invoice, total_harga: 0, estimasi_harga: 0, id_user: req.user._id, status: "menunggu form dikonfirmasi",s1_date:dateFormatTgl,date_format:`${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`})
                 await new_invoice.save()
                 return res.status(200).json({
                     success: true,
