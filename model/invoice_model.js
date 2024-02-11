@@ -41,7 +41,7 @@ const invoice_schema = new mongoose.Schema({
         type : String
     },
     bukti_pembayaran: {
-        type : Boolean
+        type : String
     },
     s1_date: {
         type: String,

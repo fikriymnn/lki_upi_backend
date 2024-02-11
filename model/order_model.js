@@ -76,7 +76,7 @@ const order_schema = new mongoose.Schema({
     hasil_analisis: {
         type: String
     },
-    sample_diambil: {
+    sample_dikembalikan: {
         type: String
     },
     riwayat_pengujian: {

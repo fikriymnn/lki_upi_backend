@@ -1,4 +1,4 @@
-const Invoice = require("../model/invoice_model")
+const Invoice = require("../model/invoice_model.js")
 const Order = require("../model/order_model.js")
 const Foto_sample = require("../model/file/foto_sample.js")
 const Jurnal_pendukung = require("../model/file/jurnal_pendukung.js")
@@ -22,7 +22,7 @@ const invoice_controller = {
                 let list_jp = []
                 let data_pesan = []
                 const order = await Order.find({ no_invoice: no_invoice })
-                console.log(order)
+                
 
                 order.forEach((v, i) => {
                     let obj = { jumlah: 0 }
@@ -88,7 +88,7 @@ const invoice_controller = {
     get_kuitansi: async (req, res) => {
         try {
             const { no_invoice } = req.query
-            console.log(no_invoice)
+           
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
             async function deskripsi_function() {
@@ -105,12 +105,11 @@ const invoice_controller = {
                 return deskripsi
             }
             const deskripsi = await deskripsi_function()
-            console.log('1')
-            console.log(deskripsi)
+           
             if (deskripsi) {
-                console.log('2')
+          
                 fs.readFile(path.join('./templates/bon.xlsx'), function (err, data) {
-                    console.log('2')
+                    
                     // Create a template
                     var template = new XlsxTemplate(data);
 
@@ -118,7 +117,7 @@ const invoice_controller = {
                     var sheetNumber = 1;
 
                     // Set up some placeholder values matching the placeholders in the template
-                    var dateString = data_invoice.s8_date.split(' ')
+                    var dateString = data_invoice?.s8_date?.split(' ')
                     var values = {
                         tanggal: data_invoice.no_invoice,
                         penerima: data_invoice?.id_user?.nama_lengkap,
@@ -126,12 +125,11 @@ const invoice_controller = {
                         total: data_invoice.total_harga,
                         tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`
                     };
-                    console.log('3')
-                    console.log(dateString)
+                   
+                   
                     // Perform substitution
                     template.substitute(sheetNumber, values);
-                    console.log(dateString)
-                    console.log('1')
+                  
                     // Get binary data
                     if (values) {
 
@@ -139,9 +137,9 @@ const invoice_controller = {
                     var data = template.generate();
                     const fileName = `${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}_kuitansi.xlsx`
                     const filePath = path.join(__dirname, `../templates/${fileName}`);
-                    console.log('2')
+                 
                     fs.writeFileSync(filePath, data, 'binary');
-                    console.log('3')
+                 
                     res.download(`${filePath}`, fileName, (err) => {
                         if (err) {
                             console.error({ err });
@@ -187,7 +185,7 @@ const invoice_controller = {
                 originalName: originalname
             }
 
-            console.log('cek file')
+          
             await Order.updateMany({uuid:id},{foto_sample:mimetype})
             const newFile = new Foto_sample({
                 foto_sample: obj,
@@ -207,7 +205,7 @@ const invoice_controller = {
     download_foto_sample: async (req, res) => {
         try {
             const dataorder = await Foto_sample.find({ uuid: req.params.id })
-            console.log(dataorder)
+          
            
 
             res.setHeader("Content-Type", dataorder[0].foto_sample.contentType);
@@ -278,13 +276,14 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
+            console.log(req.file)
 
          
             await Order.updateOne({_id:id},{hasil_analisis:originalname})
             if(obj){
                 const newFile = new Hasil_analisis({
-                    hasil_analsis: obj,
-                    id: id
+                    hasil_analisis: obj,
+                    uuid: id
                 })
                 await newFile.save()
                 res.send("success")
@@ -300,7 +299,7 @@ const invoice_controller = {
     },
     download_hasil_analisis: async (req, res) => {
         try {
-            const dataorder = await Hasil_analisis.find({ id: req.params.id })
+            const dataorder = await Hasil_analisis.aggregate([{$match:{ uuid: req.params.id }},{$sort:{_id:-1}}])
             const data =  dataorder[0].hasil_analisis
 
             res.setHeader("Content-Type", data.contentType);
@@ -319,17 +318,27 @@ const invoice_controller = {
     },
     bukti_pembayaran: async (req, res) => {
         try {
+            function timeNow() {
+                var d = new Date(),
+                  h = (d.getHours() < 10 ? '0' : '') + d.getHours(),
+                  m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+                return h + ':' + m;
+              }
             const { buffer, mimetype, originalname } = req.file
+            const {id} = req.params
+            
             const obj = {
                 data: buffer,
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Invoice.updateOne({_id:req.params.id},{bukti_pembayaran:true,status:'menunggu konfirmasi pembayaran',s7_date:`${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`})
+            await Invoice.updateOne({_id:id},{bukti_pembayaran:originalname,status:'menunggu konfirmasi pembayaran',s7_date:`${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`})
+           
             const newFile = new Bukti_pembayaran({
                 bukti_pembayaran: obj,
-                id_invoice: req.params.id
+                id_invoice: id
             })
+           
             await newFile.save()
             res.send("success")
         } catch (err) {
@@ -341,8 +350,8 @@ const invoice_controller = {
     },
     download_bukti_pembayaran: async (req, res) => {
         try {
-            const dataorder = await Bukti_pembayaran.findOne({ id_invoice: req.params.id })
-            const data = dataorder.bukti_pembayaran
+            const dataorder = await Bukti_pembayaran.aggregate([{$match:{ id_invoice: req.params.id }},{$sort:{_id:-1}}])
+            const data = dataorder[0].bukti_pembayaran
 
             res.setHeader("Content-Type", data.contentType);
 
