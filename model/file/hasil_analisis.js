@@ -7,7 +7,7 @@ const hasil_analisis_schema = new mongoose.Schema({
     contentType:String,
     originalName:String
    },
-   uuid: {
+   id: {
     type: String
    }
 },

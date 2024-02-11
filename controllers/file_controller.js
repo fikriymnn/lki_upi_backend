@@ -272,18 +272,25 @@ const invoice_controller = {
     hasil_analisis: async (req, res) => {
         try {
             const { buffer, mimetype, originalname } = req.file
+            const {id} = req.params;
             const obj = {
                 data: buffer,
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Order.updateMany({uuid:id},{hasil_analisis:originalname})
-            const newFile = new Hasil_analisis({
-                hasil_analsis: obj,
-                uuid: req.params.id
-            })
-            await newFile.save()
-            res.send("success")
+
+         
+            await Order.updateOne({_id:id},{hasil_analisis:originalname})
+            if(obj){
+                const newFile = new Hasil_analisis({
+                    hasil_analsis: obj,
+                    id: id
+                })
+                await newFile.save()
+                res.send("success")
+            }
+           
+           
         } catch (err) {
             res.status(500).json({
                 success: false,
@@ -293,7 +300,7 @@ const invoice_controller = {
     },
     download_hasil_analisis: async (req, res) => {
         try {
-            const dataorder = await Hasil_analisis.find({ uuid: req.params.id })
+            const dataorder = await Hasil_analisis.find({ id: req.params.id })
             const data =  dataorder[0].hasil_analisis
 
             res.setHeader("Content-Type", data.contentType);
