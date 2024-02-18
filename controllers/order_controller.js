@@ -172,14 +172,14 @@ const order_controller = {
                                     }
                                 })
                             }
-                            console.log('looping')
-                            console.log(req.body[i].jenis_pengujian[a])
+                           
                             jp.push(req.body[i].jenis_pengujian[a])
                             const data = await Order.find({ jenis_pengujian: req.body[i].jenis_pengujian[a], year: current_year, month: month })
                             
                             let obj = {}
-                    
+                           
                             let kode = `${req.body[i].kode_pengujian[a]}-${current_month}/${current_year}/${data.length + no + 1}`
+                           
                             obj.id_user = req.user._id
                             obj.no_invoice = invoice;
                             obj.jenis_pengujian = req.body[i].jenis_pengujian[a]
@@ -193,7 +193,7 @@ const order_controller = {
                             obj.metode_parameter = req.body[i].metode_parameter   
                             obj.deskripsi_sample = req.body[i].deskripsi_sample
                             obj.riwayat_pengujian = req.body[i].riwayat_pengujian
-                            obj.sample_diambil = req.body[i].sample_diambil
+                            obj.sample_dikembalikan = req.body[i].sample_dikembalikan
                             obj.uuid = req.body[i].uuid
                             arr.push(obj)
                             no=0
