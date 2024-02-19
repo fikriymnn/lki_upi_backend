@@ -186,7 +186,7 @@ const invoice_controller = {
             }
 
           
-            await Order.updateMany({uuid:id},{foto_sample:mimetype})
+            await Order.updateMany({uuid:id},{foto_sample:originalname})
             const newFile = new Foto_sample({
                 foto_sample: obj,
                 uuid: id
@@ -214,7 +214,7 @@ const invoice_controller = {
                 "Content-Disposition",
                 `attachment; filename=${dataorder[0].foto_sample.originalName}`
             );
-            res.send(dataorder[0].foto_sample)
+            res.send(dataorder[0].foto_sample.data)
         } catch (err) {
             res.status(500).json({
                 success: false,
