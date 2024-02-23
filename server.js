@@ -26,6 +26,9 @@ async function start(){
     app.use(cookie_parser())
     
     app.use("/api",require('./routes/router'))
+    app.use("/",(req,res)=>{
+        res.send("success")
+    })
     
     try{
         app.listen(PORT,()=>{
