@@ -1,17 +1,12 @@
 require("dotenv").config({ path: "config.env" });
-const fs = require('fs')
-const path = require('path')
+
 const express = require('express')
 const body_parser = require('body-parser')
 const cookie_parser = require('cookie-parser')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const app = express()
-const {TemplateHandler} = require('easy-template-x');
 app.use(cors({credentials: true, origin: true }))
-const XlsxTemplate = require('xlsx-template');
-// const { __dirname } = require("./global.js");
-console.log(__dirname);
 const URL = process.env.DATABASE_URL
 const PORT = process.env.PORT || 5000
 try{
@@ -23,8 +18,6 @@ try{
 const corsOptions = {
     exposedHeaders: 'Content-Disposition',credentials: true, origin: true 
   }
-
-
 app.use(cors(corsOptions))
 app.use(body_parser.json())
 app.use(body_parser.urlencoded({extended:true}))
