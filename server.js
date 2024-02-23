@@ -126,4 +126,5 @@ app.use("/api",require('./routes/router'))
 app.listen(PORT,()=>{
     console.log(`Server running on port ${PORT}`)
 })
-exports.api = functions.region("asia-southeast2").https.onRequest(app);
+
+module.exports = app
