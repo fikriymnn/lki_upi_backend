@@ -27,10 +27,14 @@ async function start(){
     
     app.use("/api",require('./routes/router'))
     
+    try{
+        app.listen(PORT,()=>{
+            console.log(`Server running on port ${PORT}`)
+        })
+    }catch(err){
+        console.log(err.message)
+    }
     
-    app.listen(PORT,()=>{
-        console.log(`Server running on port ${PORT}`)
-    })
 }
 
 start()
