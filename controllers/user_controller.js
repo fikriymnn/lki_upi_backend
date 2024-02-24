@@ -35,6 +35,9 @@ const user_controller = {
          console.log(3)
          res.cookie("access_token", access_token, {
             httpOnly: true,
+            path:"/",
+            sameSite:'None',
+            secure: true,
          })
          console.log(4)
          return res.status(200).json({
