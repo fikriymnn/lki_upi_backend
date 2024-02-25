@@ -18,7 +18,7 @@ const order_schema = new mongoose.Schema({
         default: new Date().toISOString()
     },
     date_format: {
-        type: Date,
+        type: String,
         default: `${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
     },
     year: {

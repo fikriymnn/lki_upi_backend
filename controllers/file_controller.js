@@ -184,8 +184,6 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
-
-          
             await Order.updateMany({uuid:id},{foto_sample:originalname})
             const newFile = new Foto_sample({
                 foto_sample: obj,
