@@ -6,7 +6,7 @@ const user_controller = {
    register: async (req, res) => {
       try {
          const body = req.body
-         console.log(body)
+
         
          const user_exist = await User.findOne({ email: body.email })
          if (user_exist) {
@@ -16,7 +16,7 @@ const user_controller = {
                message: "Email telah digunakan."
             })
          }
-         console.log(1)
+ 
          const hash_password = await bcrypt.hash(body.password, 10)
          const new_user = new User({ 
             email:body.email,
@@ -29,17 +29,17 @@ const user_controller = {
             program_studi:body.program_studi,
             fakultas:body.fakultas})
          await new_user.save()
-         console.log(2)
+
          const user = await User.findOne({ email:body.email })
          const access_token = generate_access_token({ _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, no_whatsapp: user.no_whatsapp,nama_lengkap: body.nama_lengkap })
-         console.log(3)
+
          res.cookie("access_token", access_token, {
             httpOnly: true,
             path:"/",
             sameSite:'None',
             secure: true,
          })
-         console.log(4)
+
          return res.status(200).json({
             success: true,
             data: {
@@ -75,7 +75,6 @@ const user_controller = {
                message: "email atau password salah."
             })
          }
-         console.log(1)
 
          const user = await User.findOne({ email })
          console.log(2)
@@ -86,7 +85,7 @@ const user_controller = {
                message: "email tidak ditemukan."
             })
          }
-         console.log(3)
+
          const compare = await bcrypt.compare(password, user.password)
          if (!compare) {
             return res.status(200).json({
@@ -95,10 +94,11 @@ const user_controller = {
                message: "password salah."
             })
          }
-         console.log(4)
+
          const access_token = generate_access_token({
             _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp
          })
+
          res.cookie('access_token', access_token, {
             httpOnly: true,
             path: "/",
@@ -106,7 +106,6 @@ const user_controller = {
             secure: true,
          })
 
-         console.log(5)
          return res.status(200).json({
             success: true,
             data: {
@@ -152,7 +151,8 @@ const user_controller = {
                message: "Logout failed!"
             })
          }
-         res.clearCookie('access_token')
+         res.clearCookie('access_token',{ sameSite:'None',
+         secure: true,})
 
          return res.status(200).json({
             success: true,
