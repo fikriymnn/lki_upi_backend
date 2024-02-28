@@ -13,14 +13,10 @@ const content_schema = new mongoose.Schema({
     type:String
    },
     foto:{
-    data:Buffer,
-    contentType:String,
-    originalName:String
+    type: String
    },
    contoh_hasil:{
-    data:Buffer,
-    contentType:String,
-    originalName:String
+   type: String
    }
 },
 {timestamps:true}

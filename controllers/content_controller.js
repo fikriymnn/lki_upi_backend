@@ -4,59 +4,15 @@ const Content = require('../model/file/content')
 const content_controller = {
     add_content: async (req, res) => {
         try {
-            if (req.files[0].fieldname == 'foto') {
-                const { mimetype, originalname, buffer } = req.files[0]
-                const mimetype2 = req.files[1].mimetype
-                const originalname2 = req.files[1].originalname
-                const buffer2 = req.files[1].buffer
-                const { title, sub_title, deskripsi } = req.body
-                const obj = {
-                    contentType: mimetype,
-                    originalName: originalname,
-                    data: buffer
-                }
-                const obj2 = {
-                    contentType: mimetype2,
-                    originalName: originalname2,
-                    data: buffer2
-                }
-                const newContent = new Content({
-                    title, sub_title, deskripsi,
-                    foto: obj,
-                    contoh_hasil: obj2
-                })
-                console.log("success")
-                await newContent.save()
-                return res.send("success")
-            } else {
-
-                const { mimetype, originalname, buffer } = req.files[0]
-                const mimetype2 = req.files[1].mimetype
-                const originalname2 = req.files[1].originalname
-                const buffer2 = req.files[1].buffer
-                const { title, sub_title, deskripsi } = req.body
-                const obj = {
-                    contentType: mimetype,
-                    originalName: originalname,
-                    data: buffer
-                }
-                const obj2 = {
-                    contentType: mimetype2,
-                    originalName: originalname2,
-                    data: buffer2
-                }
-                const newContent = new Content({
-                    title, sub_title, deskripsi,
-                    foto: obj2,
-                    contoh_hasil: obj
-                })
-                await newContent.save()
-                console.log("success")
-                return res.send("success")
-            }
-
-
-
+            const {title,sub_title,deskripsi,foto,contoh_hasil} = req.body
+            const newContent = new Content({
+                title, sub_title, deskripsi,
+                foto,
+                contoh_hasil
+            })
+            console.log("success")
+            await newContent.save()
+            return res.send("success")
         } catch (err) {
             res.status(500).json({
                 success: false,
