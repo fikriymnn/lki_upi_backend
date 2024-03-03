@@ -10,9 +10,9 @@ const content_controller = {
                 foto,
                 contoh_hasil
             })
-            console.log("success")
+        
             await newContent.save()
-            return res.send("success")
+            res.send('success')
         } catch (err) {
             res.status(500).json({
                 success: false,
@@ -108,10 +108,7 @@ const content_controller = {
             const { id } = req.params
             await Content.deleteOne({ _id: id })
 
-            return res.status(200).json({
-                success: true,
-                data: 'delete successfully'
-            })
+            res.send('success')
 
         } catch (err) {
             return res.status(500).json({
