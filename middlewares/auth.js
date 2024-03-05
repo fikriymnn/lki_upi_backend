@@ -22,7 +22,6 @@ const auth_middleware = {
                 req.user = payload
                 next()
             })
-
         }catch(err){
             return res.status(500).json({
                 success:false,
