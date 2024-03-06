@@ -19,7 +19,6 @@ const order_schema = new mongoose.Schema({
     },
     date_format: {
         type: String,
-        default: `${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
     },
     year: {
         type: String,

@@ -6,7 +6,7 @@ const invoice_controller = {
     get_invoice: async (req, res) => {
         try {
             const { id } = req.params
-            const {skip,limit,status, id_user, from, to, no_invoice, month, year,success } = req.query
+            const {skip,limit,status, id_user, from, to, no_invoice, month, year,success,jenis_pengujian } = req.query
 
             if (id) {
                 const data = await Invoice.findOne({_id:id}).populate('id_user').select({id_user:{_id: 0}});
@@ -16,7 +16,7 @@ const invoice_controller = {
                     data: data
                 })
 
-            } else if (skip && limit && (status || no_invoice || id_user || from || to || month || year||success)) {
+            } else if (skip && limit && (status || no_invoice || id_user || from || to || month || year||success||jenis_pengujian)) {
                 let obj = {}
                 const s = parseInt(skip)
                 const l = parseInt(limit)
@@ -36,7 +36,9 @@ const invoice_controller = {
                 if (success) {
                     obj.success = success=="true"?true:false;
                 }
-                console.log('skip')
+                if(jenis_pengujian){
+                    obj.jenis_pengujian = jenis_pengujian
+                }
 
                 const data = await Invoice.aggregate([
                     {$match: obj}
@@ -44,9 +46,9 @@ const invoice_controller = {
                     {$lookup:{foreignField:'_id',localField:'id_user',from:'users',as:'id_user'}},
                     {$sort:{_id:-1}}
                 ]).skip(s).limit(l)
-                console.log('skip')
+              
                 const length_data = await Invoice.aggregate([{$match:obj}])
-                console.log("cek")
+              
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,

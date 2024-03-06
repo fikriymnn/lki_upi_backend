@@ -43,6 +43,9 @@ const invoice_schema = new mongoose.Schema({
     bukti_pembayaran: {
         type : String
     },
+    jenis_pengujian: {
+        type:String
+    },
     s1_date: {
         type: String,
         default: `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
