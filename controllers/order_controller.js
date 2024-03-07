@@ -103,7 +103,7 @@ const order_controller = {
                     {$lookup:{foreignField:'_id',localField:'id_user',from:'users',as:"id_user"}}
                 ]).skip( parseInt(skip)).limit( parseInt(limit))
 
-                const length_data = await Invoice.find()
+                const length_data = await Order.find()
                 return res.status(200).json({
                     success: true,
                     length_total: length_data.length,
