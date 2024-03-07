@@ -61,7 +61,7 @@ const invoice_controller = {
 
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.docx`
-                const filePath = path.join(`${__dirname}../templates/${fileName}`);
+                const filePath = path.join(__dirname,`../templates/${fileName}`);
                 fs.writeFileSync(filePath, doc);
 
 
