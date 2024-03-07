@@ -61,7 +61,7 @@ const invoice_controller = {
 
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.docx`
-                const filePath = path.join(__dirname,`../../tmp/${fileName}`);
+                const filePath = path.join(__dirname,`../tmp/${fileName}`);
                 fs.writeFileSync(filePath, doc);
 
 
@@ -136,7 +136,7 @@ const invoice_controller = {
                     }
                     var data = template.generate();
                     const fileName = `${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}_kuitansi.xlsx`
-                    const filePath = path.join(__dirname, `../../tmp/${fileName}`);
+                    const filePath = path.join(__dirname, `../tmp/${fileName}`);
                  
                     fs.writeFileSync(filePath, data, 'binary');
                  
