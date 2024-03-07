@@ -45,7 +45,7 @@ const invoice_controller = {
             const pesan = await jp_function()
 
             if (pesan) {
-                const templateFile = fs.readFileSync(__dirname+'/templates/invoice.docx');
+                const templateFile = fs.readFileSync(__dirname+'../templates/invoice.docx');
 
                 // 2. process the template
                 const data = {
@@ -61,7 +61,7 @@ const invoice_controller = {
 
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.docx`
-                const filePath = path.join(`./templates/${fileName}`);
+                const filePath = path.join(`${__dirname}../templates/${fileName}`);
                 fs.writeFileSync(filePath, doc);
 
 
@@ -108,7 +108,7 @@ const invoice_controller = {
            
             if (deskripsi) {
           
-                fs.readFile(path.join(__dirname+'/templates/bon.xlsx'), function (err, data) {
+                fs.readFile(path.join(__dirname+'../templates/bon.xlsx'), function (err, data) {
                     
                     // Create a template
                     var template = new XlsxTemplate(data);
