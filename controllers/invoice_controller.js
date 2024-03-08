@@ -1,5 +1,6 @@
 const Invoice = require("../model/invoice_model")
 const month_bahasa = require("../utils/month_bahasa")
+const Order = require("../model/order_model")
 const mongoose = require("mongoose")
 
 const invoice_controller = {
@@ -101,8 +102,13 @@ const invoice_controller = {
         try {
             const { id } = req.params
             const body = req.body
+
             await Invoice.updateOne({ _id: id }, body)
+            
             const data = await Invoice.findOne({ _id: id })
+            if(body.status=='selesai'){
+                await Order.updateOne({ no_invoice: data.no_invoice}, {status_pengujian:'success'})
+            }
             res.status(200).json({
                 success: true,
                 message: "Update successfully!",

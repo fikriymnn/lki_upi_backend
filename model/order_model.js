@@ -34,6 +34,9 @@ const order_schema = new mongoose.Schema({
     uuid: {
         type: String
     },
+    status_pengujian: {
+        type: String
+    },
     jenis_pengujian: {
             type:String
     },
