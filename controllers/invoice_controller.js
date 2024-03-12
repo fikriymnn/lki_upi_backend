@@ -47,6 +47,8 @@ const invoice_controller = {
                     {$lookup:{foreignField:'_id',localField:'id_user',from:'users',as:'id_user'}},
                     {$sort:{_id:-1}}
                 ]).skip(s).limit(l)
+
+
               
                 const length_data = await Invoice.aggregate([{$match:obj}])
               
@@ -56,7 +58,7 @@ const invoice_controller = {
                     data
                 })
             } else if (skip && limit) {
-                console.log('sl')
+                
                 const data = await Invoice.aggregate([{
                     $lookup: {
                         from: "users",
@@ -101,20 +103,46 @@ const invoice_controller = {
     update_invoice: async (req, res) => {
         try {
             const { id } = req.params
-            const body = req.body
+            const {total_harga,s5_date,s6_date,s8_date,status} = req.body
+         
 
-            await Invoice.updateOne({ _id: id }, body)
+            await Invoice.updateOne({ _id: id }, req.body)
             
             const data = await Invoice.findOne({ _id: id })
-            if(body.status=='selesai'){
-                await Order.updateOne({ no_invoice: data.no_invoice}, {status_pengujian:'success'})
+            console.log(req.body)
+            if(data){
+                if(total_harga){
+                    await Order.updateOne({ no_invoice: data.no_invoice}, {total_harga: total_harga})
+                   
+                }
+                if(status=='selesai'){
+                    await Order.updateOne({ no_invoice: data.no_invoice}, {status_pengujian:'success'})
+                   
+                }
+                if(s5_date){
+                    await Order.updateOne({ no_invoice: data.no_invoice}, {operator_date: s5_date})
+                   
+                }
+                if(s6_date){
+                    await Order.updateOne({ no_invoice: data.no_invoice}, {pj_date: s6_date})
+                    console.log(s6_date)
+                   
+                }
+                if(s8_date){
+                    await Order.updateOne({ no_invoice: data.no_invoice}, {admin_date: s8_date})
+                   
+                }
+                res.status(200).json({
+                    success: true,
+                    message: "Update successfully!",
+                    data
+                })
             }
-            res.status(200).json({
-                success: true,
-                message: "Update successfully!",
-                data
-            })
+           
+           
 
+
+        
         } catch (err) {
             res.status(500).json({
                 success: false,

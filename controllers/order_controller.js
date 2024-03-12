@@ -53,7 +53,10 @@ const order_controller = {
                         hasil_analisis:0
                     }}
                 ]).skip( parseInt(skip)).limit( parseInt(limit))
+
+                
                 const length_data = await Order.aggregate([{$match:obj}])
+                console.log(data)
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,

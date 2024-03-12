@@ -84,6 +84,18 @@ const order_schema = new mongoose.Schema({
     riwayat_pengujian: {
         type: String
     },
+    total_harga: {
+        type: Number
+    },
+    operator_date:{
+        type:String
+    },
+    pj_date:{
+        type:String
+    },
+    admin_date:{
+        type:String
+    }
 })
 
 // jurnal_pendukung : {

@@ -36,8 +36,8 @@ const invoice_controller = {
                     obj.jumlah += 1
                     list_jp.push(v.jenis_pengujian)
 
-                    obj.hs = '-'
-                    obj.jb = '-'
+                    obj.hs = v.total_harga
+                    obj.jb = v.total_harga
                     data_pesan.push(obj)
                 })
                 return data_pesan
@@ -54,13 +54,16 @@ const invoice_controller = {
                     nosurat: no_invoice,
                     tanggal: invoice.date_format,
                     pesan: pesan,
-                    total: invoice.total_harga
+                    total: invoice.total_harga,
+                    jumlah: 1,
+                    hs: invoice.total_harga,
+                    jb: invoice.total_harga
                 }
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, data);
 
                 // 3. send output
-                const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.docx`
+                const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.pdf`
                 const filePath = path.join(`/tmp/${fileName}`);
                 fs.writeFileSync(filePath, doc);
 
@@ -115,7 +118,6 @@ const invoice_controller = {
 
                     // Replacements take place on first sheet
                     var sheetNumber = 1;
-
                     // Set up some placeholder values matching the placeholders in the template
                     var dateString = data_invoice?.s8_date?.split(' ')
                     var values = {
@@ -123,7 +125,7 @@ const invoice_controller = {
                         penerima: data_invoice?.id_user?.nama_lengkap,
                         jenis_jasa: deskripsi,
                         total: data_invoice.total_harga,
-                        tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`
+                        tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                     };
                    
                    

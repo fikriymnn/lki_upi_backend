@@ -122,7 +122,7 @@ const user_controller = {
    },
    get_user: async (req,res) => {
       try {
-         console.log(req.cookies)
+        
          const data = req.user
          if(!data){
             res.status(200).json({
