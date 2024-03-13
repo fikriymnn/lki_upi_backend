@@ -138,11 +138,7 @@ const invoice_controller = {
                     data
                 })
             }
-           
-           
-
-
-        
+                
         } catch (err) {
             res.status(500).json({
                 success: false,
@@ -151,8 +147,10 @@ const invoice_controller = {
         }
     }, delete_invoice: async (req, res) => {
         try {
-            const { id } = req.params
-            await Invoice.deleteOne({ _id: id })
+            const { no_invoice } = req.query
+            await Order.deleteOne({no_invoice: no_invoice})
+            await Invoice.deleteOne({no_invoice: no_invoice })
+
             res.status(200).json({
                 success: true,
                 message: "Delete successfully!",

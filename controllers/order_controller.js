@@ -56,7 +56,7 @@ const order_controller = {
 
                 
                 const length_data = await Order.aggregate([{$match:obj}])
-                console.log(data)
+                
                 res.status(200).json({
                     success: true,
                     length_total: length_data.length,
@@ -112,7 +112,17 @@ const order_controller = {
                     length_total: length_data.length,
                     data
                 })
-            } else {
+            }else if (no_invoice) {
+                const data = await Order.findOne({ no_invoice:no_invoice }).populate("id_user")
+                console.log(data)
+                console.log("goooow")
+                res.status(200).json({
+                    success: true,
+                    data
+                })
+
+            }
+            else {
 
                 const data = await Order.aggregate([
                     {$sort: {_id:-1}},
@@ -238,15 +248,6 @@ const order_controller = {
             const { id } = req.params
           
             const body = req.body
-            // if(req.files.jurnal_pendukung){
-            //     body.jurnal_pendukung= req.files.jurnal_pendukung
-            // }
-            // if(req.files.foto_sample){
-            //     body.foto_sample= req.files.foto_sample
-            // }
-            // if(req.files.hasil_analisis){
-            //     body.hasil_analisis= req.files.hasil_analisis
-            // }
             await Order.updateOne({ _id: id }, body)
             const data = await Order.findOne({ _id: id })
             res.status(200).json({

@@ -143,6 +143,26 @@ const user_controller = {
          })
       }
    },
+   getAdmin_user: async (req,res) => {
+      try {
+        
+         const data = await User.findOne({role:'admin'})
+         const dataOp = await User.findOne({role:'operator'})
+         const dataPj = await User.findOne({role:'pj'})
+      
+         res.status(200).json({
+            success: true,
+            data: {
+               admin:data,operator:dataOp,pj:dataPj
+            }
+         })
+      } catch (err) {
+         return res.status(500).json({
+            success: false,
+            message: err.message
+         })
+      }
+   },
    logout: async (req,res) => {
       try {
          if(!req.cookies.access_token){
@@ -168,7 +188,6 @@ const user_controller = {
    update_user: async(req,res)=>{
       try{
          const body = req.body
-         console.log(body)
          const {id} = req.params
          await User.updateOne({_id:id},body)
          const user = await User.findOne({_id:id})
@@ -187,6 +206,29 @@ const user_controller = {
             data: 'update successfully'
          })
 
+      }catch(err){
+         return res.status(500).json({
+            success: false,
+            message: err.message
+         })
+      }
+   },
+   edit_user: async(req,res)=>{
+      try{
+         const body = req.body
+         const {password} = req.body
+         const {id} = req.params
+         if(password){
+            const hash_password = await bcrypt.hash(password, 10)
+            body.password = hash_password
+            await User.updateOne({_id:id},body)
+         }else{
+            await User.updateOne({_id:id},body)
+         }     
+         return res.status(200).json({
+            success: true,
+            data: 'update successfully'
+         })
       }catch(err){
          return res.status(500).json({
             success: false,
