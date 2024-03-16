@@ -7,8 +7,40 @@ const Bukti_pembayaran = require("../model/file/bukti_pembayaran.js")
 const month_bahasa = require("../utils/month_bahasa")
 const { TemplateHandler } = require('easy-template-x');
 const XlsxTemplate = require('xlsx-template');
+const libre = require('libreoffice-convert');
+libre.convertAsync = require('util').promisify(libre.convert);
+const officegen = require('officegen');
 const fs = require('fs')
 const path = require('path');
+const mammoth = require('mammoth');
+const puppeteer = require('puppeteer');
+const replaceTextInPDF = require('../utils/pdfreplace.js')
+const angkaketext = require('../utils/angkatotext.js')
+
+async function convertToPDF(inputFilePath, outputFilePath) {
+    try {
+        // Baca file DOCX dan konversi ke HTML
+        const { value } = await mammoth.convertToHtml({ path: inputFilePath });
+
+        // Buat browser baru dengan puppeteer
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+
+        // Set konten HTML yang akan diubah menjadi PDF
+        await page.setContent(value);
+
+        // Buat PDF dari konten HTML
+        await page.pdf({ path: outputFilePath, format: 'A4' });
+
+        // Tutup browser
+        await browser.close();
+
+        console.log('File PDF berhasil dibuat:', outputFilePath);
+    } catch (error) {
+        console.error('Terjadi kesalahan:', error);
+    }
+}
+
 
 const invoice_controller = {
     get_invoice: async (req, res) => {
@@ -22,7 +54,7 @@ const invoice_controller = {
                 let list_jp = []
                 let data_pesan = []
                 const order = await Order.find({ no_invoice: no_invoice })
-                
+
 
                 order.forEach((v, i) => {
                     let obj = { jumlah: 0 }
@@ -45,7 +77,7 @@ const invoice_controller = {
             const pesan = await jp_function()
 
             if (pesan) {
-                const templateFile = fs.readFileSync(path.join(__dirname,'../templates/invoice.docx'));
+                const templateFile = fs.readFileSync(path.join(__dirname, '../templates/invoice.docx'));
 
                 // 2. process the template
                 const data = {
@@ -63,22 +95,23 @@ const invoice_controller = {
                 const doc = await handler.process(templateFile, data);
 
                 // 3. send output
-                const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}.pdf`
-                const filePath = path.join(`/tmp/${fileName}`);
+                const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}`
+                const filePath = path.join(__dirname, `../tmp/${fileName}.docx`);
                 fs.writeFileSync(filePath, doc);
+                const outputPath = path.join(__dirname, `../tmp/${fileName}.pdf`);
+                const cek = await replaceTextInPDF(filePath,outputPath)
 
-
-
-
-                return res.download(`${filePath}`, fileName, (err) => {
-                    if (err) {
-                        console.error({ err });
-                        res.status(500).send('Internal server error');
-                        fs.unlinkSync(`${filePath}`);
+                return res.download(outputPath, `${fileName}.pdf`, (err) => {
+                if (err) {
+                     console.error({ err });
+                     res.status(500).send('Internal server error');
+                     fs.unlinkSync(`${filePath}.pdf`);
+                     fs.unlinkSync(`${filePath}.docx`);          
                     }
+                     fs.unlinkSync(`${filePath}.pdf`);
+                     fs.unlinkSync(`${filePath}.docx`);    
 
-                    fs.unlinkSync(filePath);
-                })
+                 })
             }
         } catch (err) {
             res.status(500).json({
@@ -91,7 +124,7 @@ const invoice_controller = {
     get_kuitansi: async (req, res) => {
         try {
             const { no_invoice } = req.query
-           
+
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
             async function deskripsi_function() {
@@ -108,52 +141,43 @@ const invoice_controller = {
                 return deskripsi
             }
             const deskripsi = await deskripsi_function()
-           
-            if (deskripsi) {
-          
-                fs.readFile(path.join(__dirname,'../templates/bon.xlsx'), function (err, data) {
-                    
-                    // Create a template
-                    var template = new XlsxTemplate(data);
 
-                    // Replacements take place on first sheet
-                    var sheetNumber = 1;
-                    // Set up some placeholder values matching the placeholders in the template
-                    var dateString = data_invoice?.s8_date?.split(' ')
-                    var values = {
-                        tanggal: data_invoice.no_invoice,
-                        penerima: data_invoice?.id_user?.nama_lengkap,
-                        jenis_jasa: deskripsi,
-                        total: data_invoice.total_harga,
-                        tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                    };
-                   
-                   
-                    // Perform substitution
-                    template.substitute(sheetNumber, values);
-                  
-                    // Get binary data
-                    if (values) {
+            if(deskripsi){
+                const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
 
-                    }
-                    var data = template.generate();
-                    const fileName = `${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}_kuitansi.xlsx`
-                    const filePath = path.join(`/tmp/${fileName}`);
-                 
-                    fs.writeFileSync(filePath, data, 'binary');
-                 
-                    res.download(`${filePath}`, fileName, (err) => {
+                var dateString = data_invoice?.s8_date?.split(' ')
+                const values = {
+                    no_invoice: data_invoice.no_invoice,
+                    penerima: data_invoice?.id_user?.nama_lengkap,
+                    deskripsi: deskripsi,
+                    total: data_invoice.total_harga.toString(),
+                    tanggal: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
+                    terbilang: `${angkaketext(data_invoice.total_harga)} RUPIAH`
+                };
+                const handler = new TemplateHandler();
+                const doc = await handler.process(templateFile, values);
+
+                const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
+                const filePath = path.join(__dirname,`../tmp/${fileName}.docx`);
+                const outputPath = path.join(__dirname,`../tmp/${fileName}.pdf`);
+                fs.writeFileSync(filePath, doc);
+                const cek = await replaceTextInPDF(filePath,outputPath)
+                if(cek){
+                    res.download(outputPath, `${fileName}.pdf`, (err) => {
                         if (err) {
                             console.error({ err });
                             res.status(500).send('Internal server error');
-                            fs.unlinkSync(`${filePath}`);
+                             fs.unlinkSync(outputPath)
+                             fs.unlinkSync(filePath)
                         }
-                        fs.unlinkSync(filePath);
+                        fs.unlinkSync(outputPath)
+                        fs.unlinkSync(filePath)
+                        // fs.unlinkSync(path.join(__dirname,`../tmp/invoice2.pdf`))
+                       
                     });
-
-
-                })
+                }        
             }
+            
 
 
 
@@ -186,7 +210,7 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Order.updateMany({uuid:id},{foto_sample:originalname})
+            await Order.updateMany({ uuid: id }, { foto_sample: originalname })
             const newFile = new Foto_sample({
                 foto_sample: obj,
                 uuid: id
@@ -205,8 +229,8 @@ const invoice_controller = {
     download_foto_sample: async (req, res) => {
         try {
             const dataorder = await Foto_sample.find({ uuid: req.params.id })
-          
-           
+
+
 
             res.setHeader("Content-Type", dataorder[0].foto_sample.contentType);
 
@@ -231,7 +255,7 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Order.updateMany({uuid:id},{jurnal_pendukung:originalname})
+            await Order.updateMany({ uuid: id }, { jurnal_pendukung: originalname })
             const newFile = new Jurnal_pendukung({
                 jurnal_pendukung: obj,
                 uuid: id
@@ -270,7 +294,7 @@ const invoice_controller = {
     hasil_analisis: async (req, res) => {
         try {
             const { buffer, mimetype, originalname } = req.file
-            const {id} = req.params;
+            const { id } = req.params;
             const obj = {
                 data: buffer,
                 contentType: mimetype,
@@ -278,9 +302,9 @@ const invoice_controller = {
             }
             console.log(req.file)
 
-         
-            await Order.updateOne({_id:id},{hasil_analisis:originalname})
-            if(obj){
+
+            await Order.updateOne({ _id: id }, { hasil_analisis: originalname })
+            if (obj) {
                 const newFile = new Hasil_analisis({
                     hasil_analisis: obj,
                     uuid: id
@@ -288,8 +312,8 @@ const invoice_controller = {
                 await newFile.save()
                 res.send("success")
             }
-           
-           
+
+
         } catch (err) {
             res.status(500).json({
                 success: false,
@@ -299,8 +323,8 @@ const invoice_controller = {
     },
     download_hasil_analisis: async (req, res) => {
         try {
-            const dataorder = await Hasil_analisis.aggregate([{$match:{ uuid: req.params.id }},{$sort:{_id:-1}}])
-            const data =  dataorder[0].hasil_analisis
+            const dataorder = await Hasil_analisis.aggregate([{ $match: { uuid: req.params.id } }, { $sort: { _id: -1 } }])
+            const data = dataorder[0].hasil_analisis
 
             res.setHeader("Content-Type", data.contentType);
 
@@ -320,25 +344,25 @@ const invoice_controller = {
         try {
             function timeNow() {
                 var d = new Date(),
-                  h = (d.getHours() < 10 ? '0' : '') + d.getHours(),
-                  m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+                    h = (d.getHours() < 10 ? '0' : '') + d.getHours(),
+                    m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
                 return h + ':' + m;
-              }
+            }
             const { buffer, mimetype, originalname } = req.file
-            const {id} = req.params
-            
+            const { id } = req.params
+
             const obj = {
                 data: buffer,
                 contentType: mimetype,
                 originalName: originalname
             }
-            await Invoice.updateOne({_id:id},{bukti_pembayaran:originalname,status:'menunggu konfirmasi pembayaran',s7_date:`${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`})
-           
+            await Invoice.updateOne({ _id: id }, { bukti_pembayaran: originalname, status: 'menunggu konfirmasi pembayaran', s7_date: `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}` })
+
             const newFile = new Bukti_pembayaran({
                 bukti_pembayaran: obj,
                 id_invoice: id
             })
-           
+
             await newFile.save()
             res.send("success")
         } catch (err) {
@@ -350,7 +374,7 @@ const invoice_controller = {
     },
     download_bukti_pembayaran: async (req, res) => {
         try {
-            const dataorder = await Bukti_pembayaran.aggregate([{$match:{ id_invoice: req.params.id }},{$sort:{_id:-1}}])
+            const dataorder = await Bukti_pembayaran.aggregate([{ $match: { id_invoice: req.params.id } }, { $sort: { _id: -1 } }])
             const data = dataorder[0].bukti_pembayaran
 
             res.setHeader("Content-Type", data.contentType);
