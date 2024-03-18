@@ -6,40 +6,11 @@ const Hasil_analisis = require("../model/file/hasil_analisis.js")
 const Bukti_pembayaran = require("../model/file/bukti_pembayaran.js")
 const month_bahasa = require("../utils/month_bahasa")
 const { TemplateHandler } = require('easy-template-x');
-const XlsxTemplate = require('xlsx-template');
-const libre = require('libreoffice-convert');
-libre.convertAsync = require('util').promisify(libre.convert);
-const officegen = require('officegen');
 const fs = require('fs')
 const path = require('path');
-const mammoth = require('mammoth');
-const puppeteer = require('puppeteer');
 const replaceTextInPDF = require('../utils/pdfreplace.js')
 const angkaketext = require('../utils/angkatotext.js')
 
-async function convertToPDF(inputFilePath, outputFilePath) {
-    try {
-        // Baca file DOCX dan konversi ke HTML
-        const { value } = await mammoth.convertToHtml({ path: inputFilePath });
-
-        // Buat browser baru dengan puppeteer
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-
-        // Set konten HTML yang akan diubah menjadi PDF
-        await page.setContent(value);
-
-        // Buat PDF dari konten HTML
-        await page.pdf({ path: outputFilePath, format: 'A4' });
-
-        // Tutup browser
-        await browser.close();
-
-        console.log('File PDF berhasil dibuat:', outputFilePath);
-    } catch (error) {
-        console.error('Terjadi kesalahan:', error);
-    }
-}
 
 
 const invoice_controller = {
@@ -96,22 +67,23 @@ const invoice_controller = {
 
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}`
-                const filePath = path.join(__dirname, `../tmp/${fileName}.docx`);
+                const filePath = path.join(`/tmp/${fileName}.docx`);
                 fs.writeFileSync(filePath, doc);
-                const outputPath = path.join(__dirname, `../tmp/${fileName}.pdf`);
-                const cek = await replaceTextInPDF(filePath,outputPath)
-
-                return res.download(outputPath, `${fileName}.pdf`, (err) => {
-                if (err) {
-                     console.error({ err });
-                     res.status(500).send('Internal server error');
-                     fs.unlinkSync(`${filePath}.pdf`);
-                     fs.unlinkSync(`${filePath}.docx`);          
-                    }
-                     fs.unlinkSync(`${filePath}.pdf`);
-                     fs.unlinkSync(`${filePath}.docx`);    
-
-                 })
+                const outputPath = path.join(`/tmp/${fileName}.pdf`);
+                replaceTextInPDF(filePath,outputPath)
+                
+                    return res.download(outputPath, `${fileName}.pdf`, (err) => {
+                        if (err) {
+                             console.error({ err });
+                             res.status(500).send('Internal server error');
+                             fs.unlinkSync(`${filePath}`);
+                             fs.unlinkSync(`${outputPath}`);          
+                            }
+                             fs.unlinkSync(`${filePath}`);
+                             fs.unlinkSync(`${outputPath}`);    
+        
+                         })
+                
             }
         } catch (err) {
             res.status(500).json({
@@ -147,11 +119,11 @@ const invoice_controller = {
 
                 var dateString = data_invoice?.s8_date?.split(' ')
                 const values = {
-                    no_invoice: data_invoice.no_invoice,
+                    tanggal: data_invoice.no_invoice,
                     penerima: data_invoice?.id_user?.nama_lengkap,
-                    deskripsi: deskripsi,
+                    jenis_jasa: deskripsi,
                     total: data_invoice.total_harga.toString(),
-                    tanggal: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
+                    tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                     terbilang: `${angkaketext(data_invoice.total_harga)} RUPIAH`
                 };
                 const handler = new TemplateHandler();
@@ -159,23 +131,23 @@ const invoice_controller = {
 
                 const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
                 const filePath = path.join(__dirname,`../tmp/${fileName}.docx`);
-                const outputPath = path.join(__dirname,`../tmp/${fileName}.pdf`);
                 fs.writeFileSync(filePath, doc);
-                const cek = await replaceTextInPDF(filePath,outputPath)
-                if(cek){
-                    res.download(outputPath, `${fileName}.pdf`, (err) => {
-                        if (err) {
-                            console.error({ err });
-                            res.status(500).send('Internal server error');
-                             fs.unlinkSync(outputPath)
-                             fs.unlinkSync(filePath)
+                const outputPath = path.join(__dirname,`../tmp/${fileName}.pdf`);
+                replaceTextInPDF(filePath,outputPath)
+               
+                return res.download(outputPath, `${fileName}.pdf`, (err) => {
+                    if (err) {
+                        console.error({ err });
+                        res.status(500).send('Internal server error');
+                            fs.unlinkSync(`${outputPath}`)
+                            fs.unlinkSync(`${filePath}`)
                         }
-                        fs.unlinkSync(outputPath)
-                        fs.unlinkSync(filePath)
+                        fs.unlinkSync(`${outputPath}`)
+                        fs.unlinkSync(`${filePath}`)
                         // fs.unlinkSync(path.join(__dirname,`../tmp/invoice2.pdf`))
                        
                     });
-                }        
+                       
             }
             
 

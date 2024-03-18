@@ -11,7 +11,7 @@ module.exports = replaceTextInPDF = async (inputFilePath, outputFilePath) => {
             result.saveFiles(outputFilePath);
             console.log('Penggantian teks selesai. File hasil disimpan di:', outputFilePath);  
         });
-        return true
+        
     } catch (error) {
         console.error('Terjadi kesalahan:', error);
     }
