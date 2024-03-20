@@ -10,6 +10,7 @@ const fs = require('fs')
 const path = require('path');
 const replaceTextInPDF = require('../utils/pdfreplace.js')
 const angkaketext = require('../utils/angkatotext.js')
+var convertapi = require('convertapi')('tUY1SAueJrc3tlrL');
 
 
 
@@ -112,41 +113,52 @@ const invoice_controller = {
                 })
                 return deskripsi
             }
+            const dateString = data_invoice?.s8_date?.split(' ')
             const deskripsi = await deskripsi_function()
 
             if(deskripsi){
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
 
-                var dateString = data_invoice?.s8_date?.split(' ')
+                
                 const values = {
                     tanggal: data_invoice.no_invoice,
                     penerima: data_invoice?.id_user?.nama_lengkap,
-                    jenis_jasa: deskripsi,
+                    jenisjasa: deskripsi,
                     total: data_invoice.total_harga.toString(),
                     tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                    terbilang: `${angkaketext(data_invoice.total_harga)} RUPIAH`
+                    terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
                 };
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, values);
 
                 const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
-                const filePath = path.join(__dirname,`../tmp/${fileName}.docx`);
+                const filePath = path.join(`/tmp/${fileName}.docx`);
                 fs.writeFileSync(filePath, doc);
-                const outputPath = path.join(__dirname,`../tmp/${fileName}.pdf`);
-                replaceTextInPDF(filePath,outputPath)
-               
-                return res.download(outputPath, `${fileName}.pdf`, (err) => {
-                    if (err) {
-                        console.error({ err });
-                        res.status(500).send('Internal server error');
+                const outputPath = path.join(`/tmp/${fileName}.pdf`);
+                const cek = await replaceTextInPDF(filePath,outputPath)
+
+                await convertapi.convert('pdf', {
+                    File: filePath
+                }, 'docx').then(function (result) {
+                    result.saveFiles(outputPath);
+                    console.log('Penggantian teks selesai. File hasil disimpan di:',outputPath);  
+                     res.download(outputPath, `${fileName}.pdf`, (err) => {
+                        if (err) {
+                            console.error({ err });
+                            res.status(500).send('Internal server error');
+                                fs.unlinkSync(`${outputPath}`)
+                                fs.unlinkSync(`${filePath}`)
+                            }
                             fs.unlinkSync(`${outputPath}`)
                             fs.unlinkSync(`${filePath}`)
-                        }
-                        fs.unlinkSync(`${outputPath}`)
-                        fs.unlinkSync(`${filePath}`)
-                        // fs.unlinkSync(path.join(__dirname,`../tmp/invoice2.pdf`))
-                       
-                    });
+                
+                           
+                        });
+                });
+
+                
+               
+               
                        
             }
             
