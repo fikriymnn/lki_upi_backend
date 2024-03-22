@@ -71,19 +71,39 @@ const invoice_controller = {
                 const filePath = path.join(`/tmp/${fileName}.docx`);
                 fs.writeFileSync(filePath, doc);
                 const outputPath = path.join(`/tmp/${fileName}.pdf`);
-                replaceTextInPDF(filePath,outputPath)
-                
-                    return res.download(outputPath, `${fileName}.pdf`, (err) => {
+                // replaceTextInPDF(filePath,outputPath)
+                const cek = await replaceTextInPDF(filePath,outputPath)
+
+                await convertapi.convert('pdf', {
+                    File: filePath
+                }, 'docx').then(function (result) {
+                    result.saveFiles(outputPath);
+                    console.log('Penggantian teks selesai. File hasil disimpan di:',outputPath);  
+                     res.download(outputPath, `${fileName}.pdf`, (err) => {
                         if (err) {
-                             console.error({ err });
-                             res.status(500).send('Internal server error');
-                             fs.unlinkSync(`${filePath}`);
-                             fs.unlinkSync(`${outputPath}`);          
+                            console.error({ err });
+                            res.status(500).send('Internal server error');
+                                fs.unlinkSync(`${outputPath}`)
+                                fs.unlinkSync(`${filePath}`)
                             }
-                             fs.unlinkSync(`${filePath}`);
-                             fs.unlinkSync(`${outputPath}`);    
+                            fs.unlinkSync(`${outputPath}`)
+                            fs.unlinkSync(`${filePath}`)
+                
+                           
+                        });
+                });
+                
+                    // return res.download(outputPath, `${fileName}.pdf`, (err) => {
+                    //     if (err) {
+                    //          console.error({ err });
+                    //          res.status(500).send('Internal server error');
+                    //          fs.unlinkSync(`${filePath}`);
+                    //          fs.unlinkSync(`${outputPath}`);          
+                    //         }
+                    //          fs.unlinkSync(`${filePath}`);
+                    //          fs.unlinkSync(`${outputPath}`);    
         
-                         })
+                    //      })
                 
             }
         } catch (err) {
