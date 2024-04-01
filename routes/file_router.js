@@ -9,7 +9,7 @@ router.post("/foto_sample/:id?",multer().single('foto_sample'),file_controller.f
 router.get("/download_jurnal_pendukung/:id",file_controller.download_jurnal_pendukung)
 router.post("/jurnal_pendukung/:id?",multer().single('jurnal_pendukung'),file_controller.jurnal_pendukung)
 router.get("/download_hasil_analisis/:id",file_controller.download_hasil_analisis)
-router.post("/hasil_analisis/:id",multer().single('hasil_analisis'),file_controller.hasil_analisis)
+router.post("/hasil_analisis/:id",file_controller.hasil_analisis)
 router.get("/download_bukti_pembayaran/:id",file_controller.download_bukti_pembayaran)
 router.post("/bukti_pembayaran/:id",multer().single('bukti_pembayaran'),file_controller.bukti_pembayaran)
 
