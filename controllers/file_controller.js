@@ -214,6 +214,7 @@ const invoice_controller = {
                 contentType: mimetype,
                 originalName: originalname
             }
+            await Foto_sample.deleteOne({uuid:id})
             await Order.updateMany({ uuid: id }, { foto_sample: originalname })
             const newFile = new Foto_sample({
                 foto_sample: obj,
@@ -305,6 +306,8 @@ const invoice_controller = {
                 originalName: originalname
             }
             console.log(req.file)
+            await Hasil_analisis.deleteOne({uuid:id})
+            
 
 
             await Order.updateOne({ _id: id }, { hasil_analisis: originalname })
