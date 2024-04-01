@@ -300,26 +300,26 @@ const invoice_controller = {
         try {
             const { buffer, mimetype, originalname } = req.file
             const { id } = req.params;
-            const obj = {
-                data: buffer,
-                contentType: mimetype,
-                originalName: originalname
-            }
-            console.log(req.file)
-            await Hasil_analisis.deleteOne({uuid:id})
+            // const obj = {
+            //     data: buffer,
+            //     contentType: mimetype,
+            //     originalName: originalname
+            // }
+            // console.log(req.file)
+            // await Hasil_analisis.deleteOne({uuid:id})
             
 
 
-            await Order.updateOne({ _id: id }, { hasil_analisis: originalname })
-            if (obj) {
-                const newFile = new Hasil_analisis({
-                    hasil_analisis: obj,
-                    uuid: id
-                })
-                await newFile.save()
-                res.send("success")
-            }
-
+            await Order.updateOne({ _id: id }, { hasil_analisis:req.body.hasil_analisis })
+            // if (obj) {
+            //     const newFile = new Hasil_analisis({
+            //         hasil_analisis: obj,
+            //         uuid: id
+            //     })
+            //     await newFile.save()
+            //     res.send("success")
+            // }
+            res.send("success")
 
         } catch (err) {
             res.status(500).json({
