@@ -207,20 +207,9 @@ const invoice_controller = {
     },
     foto_sample: async (req, res) => {
         try {
-            const { buffer, mimetype, originalname } = req.file
+            const {foto_sample} = req.body
             const { id } = req.params
-            const obj = {
-                data: buffer,
-                contentType: mimetype,
-                originalName: originalname
-            }
-            await Foto_sample.deleteOne({uuid:id})
-            await Order.updateMany({ uuid: id }, { foto_sample: originalname })
-            const newFile = new Foto_sample({
-                foto_sample: obj,
-                uuid: id
-            })
-            await newFile.save()
+            await Order.updateMany({ uuid: id }, { foto_sample })
             res.send("success")
 
 
@@ -253,24 +242,10 @@ const invoice_controller = {
     },
     jurnal_pendukung: async (req, res) => {
         try {
-            const { buffer, mimetype, originalname } = req.file
+            const {jurnal_pendukung} = req.body
             const { id } = req.params
-            const obj = {
-                data: buffer,
-                contentType: mimetype,
-                originalName: originalname
-            }
-            await Order.updateMany({ uuid: id }, { jurnal_pendukung: originalname })
-            const newFile = new Jurnal_pendukung({
-                jurnal_pendukung: obj,
-                uuid: id
-            })
-            await newFile.save()
+            await Order.updateMany({ uuid: id }, { jurnal_pendukung })  
             res.send("success")
-
-
-
-
         } catch (err) {
             res.status(500).json({
                 success: false,
@@ -298,27 +273,9 @@ const invoice_controller = {
     },
     hasil_analisis: async (req, res) => {
         try {
-            const { buffer, mimetype, originalname } = req.file
             const { id } = req.params;
-            // const obj = {
-            //     data: buffer,
-            //     contentType: mimetype,
-            //     originalName: originalname
-            // }
-            // console.log(req.file)
-            // await Hasil_analisis.deleteOne({uuid:id})
-            
-
-
-            await Order.updateOne({ _id: id }, { hasil_analisis:req.body.hasil_analisis })
-            // if (obj) {
-            //     const newFile = new Hasil_analisis({
-            //         hasil_analisis: obj,
-            //         uuid: id
-            //     })
-            //     await newFile.save()
-            //     res.send("success")
-            // }
+            const {hasil_analisis} = req.body;
+            await Order.updateOne({ _id: id }, { hasil_analisis })
             res.send("success")
 
         } catch (err) {
@@ -355,22 +312,9 @@ const invoice_controller = {
                     m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
                 return h + ':' + m;
             }
-            const { buffer, mimetype, originalname } = req.file
+            const {bukti_pembayaran} = req.body
             const { id } = req.params
-
-            const obj = {
-                data: buffer,
-                contentType: mimetype,
-                originalName: originalname
-            }
-            await Invoice.updateOne({ _id: id }, { bukti_pembayaran: originalname, status: 'menunggu konfirmasi pembayaran', s7_date: `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}` })
-
-            const newFile = new Bukti_pembayaran({
-                bukti_pembayaran: obj,
-                id_invoice: id
-            })
-
-            await newFile.save()
+            await Invoice.updateOne({ _id: id }, { bukti_pembayaran: bukti_pembayaran, status: 'menunggu konfirmasi pembayaran', s7_date: `${timeNow()} ${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}` })
             res.send("success")
         } catch (err) {
             res.status(500).json({
