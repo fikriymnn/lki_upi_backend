@@ -27,7 +27,7 @@ const invoice_controller = {
                 let data_pesan = []
                 const order = await Order.find({ no_invoice: no_invoice })
 
-
+                console.log("1")
                 order.forEach((v, i) => {
                     let obj = { jumlah: 0 }
                     obj.deskripsi = `Analisis ${v.jenis_pengujian}`
@@ -47,10 +47,10 @@ const invoice_controller = {
                 return data_pesan
             }
             const pesan = await jp_function()
-
+            console.log("2")
             if (pesan) {
-                const templateFile = fs.readFileSync(path.join(__dirname, '../templates/invoice.docx'));
-
+                const templateFile = fs.readFileSync(path.join(__dirname,'../templates/invoice.docx'));
+            
                 // 2. process the template
                 const data = {
                     nama: invoice.id_user.nama_lengkap,
@@ -65,32 +65,38 @@ const invoice_controller = {
                 }
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, data);
-
+                console.log("3")
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}`
+                console.log("4")
                 const filePath = path.join(`/tmp/${fileName}.docx`);
+                console.log("5")
                 fs.writeFileSync(filePath, doc);
+                console.log("6")
                 const outputPath = path.join(`/tmp/${fileName}.pdf`);
                 // replaceTextInPDF(filePath,outputPath)
-                const cek = await replaceTextInPDF(filePath,outputPath)
-
+                // const cek = await replaceTextInPDF(filePath,outputPath)
+console.log("1")
                 await convertapi.convert('pdf', {
                     File: filePath
                 }, 'docx').then(function (result) {
                     result.saveFiles(outputPath);
-                    console.log('Penggantian teks selesai. File hasil disimpan di:',outputPath);  
-                     res.download(outputPath, `${fileName}.pdf`, (err) => {
-                        if (err) {
-                            console.error({ err });
-                            res.status(500).send('Internal server error');
+                    console.log('Penggantian teks selesai. File hasil disimpan di:',outputPath); 
+                    setTimeout(()=>{
+                        res.download(outputPath, `${fileName}.pdf`, (err) => {
+                            if (err) {
+                                console.error({ err });
+                                res.status(500).send('Internal server error');
+                                    fs.unlinkSync(`${outputPath}`)
+                                    fs.unlinkSync(`${filePath}`)
+                                }
                                 fs.unlinkSync(`${outputPath}`)
                                 fs.unlinkSync(`${filePath}`)
-                            }
-                            fs.unlinkSync(`${outputPath}`)
-                            fs.unlinkSync(`${filePath}`)
-                
-                           
-                        });
+                    
+                               
+                            });
+                    },1500) 
+                   
                 });
                 
                     // return res.download(outputPath, `${fileName}.pdf`, (err) => {
@@ -107,6 +113,7 @@ const invoice_controller = {
                 
             }
         } catch (err) {
+            console.log(err)
             res.status(500).json({
                 success: false,
                 message: err.message
@@ -155,7 +162,8 @@ const invoice_controller = {
                 const filePath = path.join(`/tmp/${fileName}.docx`);
                 fs.writeFileSync(filePath, doc);
                 const outputPath = path.join(`/tmp/${fileName}.pdf`);
-                const cek = await replaceTextInPDF(filePath,outputPath)
+                // const cek = await replaceTextInPDF(filePath,outputPath)
+                console.log("1")
 
                 await convertapi.convert('pdf', {
                     File: filePath
