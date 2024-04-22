@@ -170,18 +170,21 @@ console.log("1")
                 }, 'docx').then(function (result) {
                     result.saveFiles(outputPath);
                     console.log('Penggantian teks selesai. File hasil disimpan di:',outputPath);  
-                     res.download(outputPath, `${fileName}.pdf`, (err) => {
-                        if (err) {
-                            console.error({ err });
-                            res.status(500).send('Internal server error');
+                    setTimeout(()=>{
+                        res.download(outputPath, `${fileName}.pdf`, (err) => {
+                            if (err) {
+                                console.error({ err });
+                                res.status(500).send('Internal server error');
+                                    fs.unlinkSync(`${outputPath}`)
+                                    fs.unlinkSync(`${filePath}`)
+                                }
                                 fs.unlinkSync(`${outputPath}`)
                                 fs.unlinkSync(`${filePath}`)
-                            }
-                            fs.unlinkSync(`${outputPath}`)
-                            fs.unlinkSync(`${filePath}`)
-                
-                           
-                        });
+                    
+                               
+                            });
+                    },1500)
+                    
                 });
 
                 
