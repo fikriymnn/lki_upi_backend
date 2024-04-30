@@ -36,7 +36,7 @@ const user_controller = {
          res.cookie("access_token", access_token, {
             httpOnly: true,
             path:"/",
-            sameSite:'None',
+            sameSite:'None', 
             secure: true,
          })
          res.localStorage()
