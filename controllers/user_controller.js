@@ -36,7 +36,7 @@ const user_controller = {
          res.cookie("access_token", access_token, {
             httpOnly: true,
             path:"/",
-            sameSite:'None',
+            sameSite:'Strict', 
             secure: true,
          })
 
@@ -102,7 +102,7 @@ const user_controller = {
          res.cookie('access_token', access_token, {
             httpOnly: true,
             path: "/",
-            sameSite:'None',
+            sameSite:'Strict',
             secure: true,
          })
 
