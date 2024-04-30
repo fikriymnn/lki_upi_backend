@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken")
 const auth_middleware = {
     auth: (req,res,next)=>{
         try{
-            const token = req.cookies.access_token
+            const token = req.cookies.access_token || req.params.id
             if(!token){
                 return res.status(401).json({
                     success:false,

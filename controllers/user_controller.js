@@ -39,9 +39,11 @@ const user_controller = {
             sameSite:'None',
             secure: true,
          })
+         res.localStorage()
 
          return res.status(200).json({
             success: true,
+            token:access_token,
             data: {
                _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, nama_lengkap: body.nama_lengkap,no_whatsapp: user.no_whatsapp
             }
@@ -108,6 +110,7 @@ const user_controller = {
 
          return res.status(200).json({
             success: true,
+            token:access_token,
             data: {
                _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp,
             }
