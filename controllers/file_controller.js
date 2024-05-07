@@ -19,19 +19,14 @@ const invoice_controller = {
         try {
             const { no_invoice } = req.query
             const invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate("id_user")
-
+            const order = await Order.find({ no_invoice: no_invoice })
 
             async function jp_function() {
-
                 let list_jp = []
                 let data_pesan = []
-                const order = await Order.find({ no_invoice: no_invoice })
-
-                console.log("1")
                 order.forEach((v, i) => {
                     let obj = { jumlah: 0 }
                     obj.deskripsi = `Analisis ${v.jenis_pengujian}`
-
                     list_jp.forEach((v2) => {
                         if (v2 == v.jenis_pengujian) {
                             obj.jumlah += 1
@@ -39,9 +34,9 @@ const invoice_controller = {
                     })
                     obj.jumlah += 1
                     list_jp.push(v.jenis_pengujian)
-
-                    obj.hs = v.total_harga
-                    obj.jb = v.total_harga
+                    obj.jumlah = v.jumlah_sample
+                    obj.hs = ((v.total_harga/v.jumlah_sample).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
+                    obj.jb = (v.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
                     data_pesan.push(obj)
                 })
                 return data_pesan
@@ -50,7 +45,6 @@ const invoice_controller = {
             console.log("2")
             if (pesan) {
                 const templateFile = fs.readFileSync(path.join(__dirname,'../templates/invoice.docx'));
-            
                 // 2. process the template
                 const data = {
                     nama: invoice.id_user.nama_lengkap,
@@ -58,25 +52,19 @@ const invoice_controller = {
                     nosurat: no_invoice,
                     tanggal: invoice.date_format,
                     pesan: pesan,
-                    total: invoice.total_harga,
-                    jumlah: 1,
-                    hs: invoice.total_harga,
-                    jb: invoice.total_harga
+                    total: (invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
+                    jumlah: order[0].jumlah_sample,
                 }
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, data);
-                console.log("3")
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}`
-                console.log("4")
                 const filePath = path.join(`/tmp/${fileName}.docx`);
-                console.log("5")
+                console.log("1")
                 fs.writeFileSync(filePath, doc);
-                console.log("6")
                 const outputPath = path.join(`/tmp/${fileName}.pdf`);
                 // replaceTextInPDF(filePath,outputPath)
                 // const cek = await replaceTextInPDF(filePath,outputPath)
-console.log("1")
                 await convertapi.convert('pdf', {
                     File: filePath
                 }, 'docx').then(function (result) {
@@ -151,7 +139,7 @@ console.log("1")
                     tanggal: data_invoice.no_invoice,
                     penerima: data_invoice?.id_user?.nama_lengkap,
                     jenisjasa: deskripsi,
-                    total: data_invoice.total_harga.toString(),
+                    total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                     terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
                 };
