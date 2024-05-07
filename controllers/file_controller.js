@@ -45,7 +45,6 @@ const invoice_controller = {
         return data_pesan;
       }
       const pesan = await jp_function();
-      const order = await Order.find({ no_invoice: no_invoice });
       console.log("2");
       if (pesan) {
         const templateFile = fs.readFileSync(
@@ -61,7 +60,6 @@ const invoice_controller = {
           pesan: pesan,
           total: invoice.total_harga,
           jumlah: 1,
-          jml_sample: 3,
           hs: invoice.total_harga,
           jb: invoice.total_harga,
         };
