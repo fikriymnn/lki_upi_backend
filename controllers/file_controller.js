@@ -60,7 +60,8 @@ const invoice_controller = {
           tanggal: invoice.date_format,
           pesan: pesan,
           total: invoice.total_harga,
-          jumlah: 3,
+          jumlah: 1,
+          jml_sample: 3,
           hs: invoice.total_harga,
           jb: invoice.total_harga,
         };
