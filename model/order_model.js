@@ -95,6 +95,12 @@ const order_schema = new mongoose.Schema({
     },
     admin_date:{
         type:String
+    },
+    nama_pembimbing: {
+        type:String
+    },
+    lama_pengerjaan: {
+        type: String
     }
 })
 

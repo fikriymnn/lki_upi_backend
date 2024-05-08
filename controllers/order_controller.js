@@ -207,6 +207,8 @@ const order_controller = {
                             obj.deskripsi_sample = req.body[i].deskripsi_sample
                             obj.riwayat_pengujian = req.body[i].riwayat_pengujian
                             obj.sample_dikembalikan = req.body[i].sample_dikembalikan
+                            obj.nama_pembimbing = req.body[i].nama_pembimbing
+                            obj.lama_pengerjaan = req.body[i].lama_pengerjaan
                             
                             obj.uuid = req.body[i].uuid
                             arr.push(obj)
