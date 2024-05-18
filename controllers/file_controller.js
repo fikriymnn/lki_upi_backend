@@ -33,7 +33,7 @@ const invoice_controller = {
                     obj.jumlah += 1
                     list_jp.push(v.jenis_pengujian)
                     obj.jumlah = v.jumlah_sample
-                    obj.hs = ((v.total_harga/v.jumlah_sample).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
+                    obj.hs = ((v.total_harga / v.jumlah_sample).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
                     obj.jb = (v.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
                     data_pesan.push(obj)
                 })
@@ -42,7 +42,7 @@ const invoice_controller = {
             const pesan = await jp_function()
             console.log("2")
             if (pesan) {
-                const templateFile = fs.readFileSync(path.join(__dirname,'../templates/invoice.docx'));
+                const templateFile = fs.readFileSync(path.join(__dirname, '../templates/invoice.docx'));
                 // 2. process the template
                 const data = {
                     nama: invoice.id_user.nama_lengkap,
@@ -67,36 +67,36 @@ const invoice_controller = {
                     File: filePath
                 }, 'docx').then(function (result) {
                     result.saveFiles(outputPath);
-                    console.log('Penggantian teks selesai. File hasil disimpan di:',outputPath); 
-                    setTimeout(()=>{
+                    console.log('Penggantian teks selesai. File hasil disimpan di:', outputPath);
+                    setTimeout(() => {
                         res.download(outputPath, `${fileName}.pdf`, (err) => {
                             if (err) {
                                 console.error({ err });
                                 res.status(500).send('Internal server error');
-                                    fs.unlinkSync(`${outputPath}`)
-                                    fs.unlinkSync(`${filePath}`)
-                                }
                                 fs.unlinkSync(`${outputPath}`)
                                 fs.unlinkSync(`${filePath}`)
-                    
-                               
-                            });
-                    },1500) 
-                   
+                            }
+                            fs.unlinkSync(`${outputPath}`)
+                            fs.unlinkSync(`${filePath}`)
+
+
+                        });
+                    }, 1500)
+
                 });
-                
-                    // return res.download(outputPath, `${fileName}.pdf`, (err) => {
-                    //     if (err) {
-                    //          console.error({ err });
-                    //          res.status(500).send('Internal server error');
-                    //          fs.unlinkSync(`${filePath}`);
-                    //          fs.unlinkSync(`${outputPath}`);          
-                    //         }
-                    //          fs.unlinkSync(`${filePath}`);
-                    //          fs.unlinkSync(`${outputPath}`);    
-        
-                    //      })
-                
+
+                // return res.download(outputPath, `${fileName}.pdf`, (err) => {
+                //     if (err) {
+                //          console.error({ err });
+                //          res.status(500).send('Internal server error');
+                //          fs.unlinkSync(`${filePath}`);
+                //          fs.unlinkSync(`${outputPath}`);          
+                //         }
+                //          fs.unlinkSync(`${filePath}`);
+                //          fs.unlinkSync(`${outputPath}`);    
+
+                //      })
+
             }
         } catch (err) {
             console.log(err)
@@ -129,10 +129,10 @@ const invoice_controller = {
             const dateString = data_invoice?.s8_date?.split(' ')
             const deskripsi = await deskripsi_function()
 
-            if(deskripsi){
+            if (deskripsi) {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
 
-                
+
                 const values = {
                     tanggal: data_invoice.no_invoice,
                     penerima: data_invoice?.id_user?.nama_lengkap,
@@ -155,187 +155,193 @@ const invoice_controller = {
                     File: filePath
                 }, 'docx').then(function (result) {
                     result.saveFiles(outputPath);
-                    console.log('Penggantian teks selesai. File hasil disimpan di:',outputPath);  
-                    setTimeout(()=>{
+                    console.log('Penggantian teks selesai. File hasil disimpan di:', outputPath);
+                    setTimeout(() => {
                         res.download(outputPath, `${fileName}.pdf`, (err) => {
                             if (err) {
                                 console.error({ err });
                                 res.status(500).send('Internal server error');
-                                    fs.unlinkSync(`${outputPath}`)
-                                    fs.unlinkSync(`${filePath}`)
-                                }
                                 fs.unlinkSync(`${outputPath}`)
                                 fs.unlinkSync(`${filePath}`)
-                    
-                               
-                            });
-                    },1500)
-                    
+                            }
+                            fs.unlinkSync(`${outputPath}`)
+                            fs.unlinkSync(`${filePath}`)
+
+
+                        });
+                    }, 1500)
+
                 });
             }
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  get_file: async (req, res) => {
-    try {
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  foto_sample: async (req, res) => {
-    try {
-      const { foto_sample } = req.body;
-      const { id } = req.params;
-      await Order.updateMany({ uuid: id }, { foto_sample });
-      res.send("success");
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  download_foto_sample: async (req, res) => {
-    try {
-      const dataorder = await Foto_sample.find({ uuid: req.params.id });
-
-      res.setHeader("Content-Type", dataorder[0].foto_sample.contentType);
-
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=${dataorder[0].foto_sample.originalName}`
-      );
-      res.send(dataorder[0].foto_sample.data);
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  jurnal_pendukung: async (req, res) => {
-    try {
-      const { jurnal_pendukung } = req.body;
-      const { id } = req.params;
-      await Order.updateMany({ uuid: id }, { jurnal_pendukung });
-      res.send("success");
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  download_jurnal_pendukung: async (req, res) => {
-    try {
-      const dataorder = await Jurnal_pendukung.find({ uuid: req.params.id });
-      const data = dataorder[0].jurnal_pendukung;
-
-      res.setHeader("Content-Type", data.contentType);
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=${data.originalName}`
-      );
-      res.send(data.data);
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  hasil_analisis: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { hasil_analisis } = req.body;
-      await Order.updateOne({ _id: id }, { hasil_analisis });
-      res.send("success");
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  download_hasil_analisis: async (req, res) => {
-    try {
-      const dataorder = await Hasil_analisis.aggregate([
-        { $match: { uuid: req.params.id } },
-        { $sort: { _id: -1 } },
-      ]);
-      const data = dataorder[0].hasil_analisis;
-
-      res.setHeader("Content-Type", data.contentType);
-
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=${data.originalName}`
-      );
-      res.send(data.data);
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  bukti_pembayaran: async (req, res) => {
-    try {
-      function timeNow() {
-        var d = new Date(),
-          h = (d.getHours() < 10 ? "0" : "") + d.getHours(),
-          m = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
-        return h + ":" + m;
-      }
-      const { bukti_pembayaran } = req.body;
-      const { id } = req.params;
-      await Invoice.updateOne(
-        { _id: id },
-        {
-          bukti_pembayaran: bukti_pembayaran,
-          status: "menunggu konfirmasi pembayaran",
-          s7_date: `${timeNow()} ${new Date().getDate()} ${month_bahasa(
-            new Date().getMonth()
-          )} ${new Date().getFullYear()}`,
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
         }
-      );
-      res.send("success");
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
-  download_bukti_pembayaran: async (req, res) => {
-    try {
-      const dataorder = await Bukti_pembayaran.aggregate([
-        { $match: { id_invoice: req.params.id } },
-        { $sort: { _id: -1 } },
-      ]);
-      const data = dataorder[0].bukti_pembayaran;
+    },
+    get_file: async (req, res) => {
+        try {
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    foto_sample: async (req, res) => {
+        try {
+            const { foto_sample } = req.body;
+            const { id } = req.params;
+            await Order.updateMany({ uuid: id }, { foto_sample });
+            res.send("success");
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    download_foto_sample: async (req, res) => {
+        try {
+            const dataorder = await Foto_sample.find({ uuid: req.params.id });
 
-      res.setHeader("Content-Type", data.contentType);
+            res.setHeader("Content-Type", dataorder[0].foto_sample.contentType);
 
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=${data.originalName}`
-      );
-      res.send(data.data);
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  },
+            res.setHeader(
+                "Content-Disposition",
+                `attachment; filename=${dataorder[0].foto_sample.originalName}`
+            );
+            res.send(dataorder[0].foto_sample.data);
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    jurnal_pendukung: async (req, res) => {
+        try {
+            const { jurnal_pendukung } = req.body;
+            const { id } = req.params;
+            await Order.updateMany({ uuid: id }, { jurnal_pendukung });
+            res.send("success");
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    download_jurnal_pendukung: async (req, res) => {
+        try {
+            const dataorder = await Jurnal_pendukung.find({ uuid: req.params.id });
+            const data = dataorder[0].jurnal_pendukung;
+
+            res.setHeader("Content-Type", data.contentType);
+            res.setHeader(
+                "Content-Disposition",
+                `attachment; filename=${data.originalName}`
+            );
+            res.send(data.data);
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    hasil_analisis: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { task, no_invoice } = req.query
+            const { hasil_analisis } = req.body;
+            await Order.updateOne({ _id: id }, { hasil_analisis })
+            if (task == "operator") {
+                await Invoice.updateOne({ no_invoice: no_invoice }, { opTask: true })
+            } else if (task == "pj") {
+                await Invoice.updateOne({ no_invoice: no_invoice }, { opTask: true })
+            }
+            res.send("success");
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    download_hasil_analisis: async (req, res) => {
+        try {
+            const dataorder = await Hasil_analisis.aggregate([
+                { $match: { uuid: req.params.id } },
+                { $sort: { _id: -1 } },
+            ]);
+            const data = dataorder[0].hasil_analisis;
+
+            res.setHeader("Content-Type", data.contentType);
+
+            res.setHeader(
+                "Content-Disposition",
+                `attachment; filename=${data.originalName}`
+            );
+            res.send(data.data);
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    bukti_pembayaran: async (req, res) => {
+        try {
+            function timeNow() {
+                var d = new Date(),
+                    h = (d.getHours() < 10 ? "0" : "") + d.getHours(),
+                    m = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+                return h + ":" + m;
+            }
+            const { bukti_pembayaran } = req.body;
+            const { id } = req.params;
+            await Invoice.updateOne(
+                { _id: id },
+                {
+                    bukti_pembayaran: bukti_pembayaran,
+                    status: "menunggu konfirmasi pembayaran",
+                    s7_date: `${timeNow()} ${new Date().getDate()} ${month_bahasa(
+                        new Date().getMonth()
+                    )} ${new Date().getFullYear()}`,
+                }
+            );
+            res.send("success");
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
+    download_bukti_pembayaran: async (req, res) => {
+        try {
+            const dataorder = await Bukti_pembayaran.aggregate([
+                { $match: { id_invoice: req.params.id } },
+                { $sort: { _id: -1 } },
+            ]);
+            const data = dataorder[0].bukti_pembayaran;
+
+            res.setHeader("Content-Type", data.contentType);
+
+            res.setHeader(
+                "Content-Disposition",
+                `attachment; filename=${data.originalName}`
+            );
+            res.send(data.data);
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            });
+        }
+    },
 };
 
 module.exports = invoice_controller;
