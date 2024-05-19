@@ -156,7 +156,8 @@ const invoice_controller = {
         if (status == "Selesai") {
           await Order.updateOne(
             { no_invoice: data.no_invoice },
-            { status_pengujian: "success" }
+            { status_pengujian: "success" },
+            { status_report: "success" }
           );
         }
         if (status == "Menunggu Pembayaran") {
