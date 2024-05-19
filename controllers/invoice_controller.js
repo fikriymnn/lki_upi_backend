@@ -159,6 +159,12 @@ const invoice_controller = {
             { status_pengujian: "success" }
           );
         }
+        if (status == "Menunggu Pembayaran") {
+          await Order.updateOne(
+            { no_invoice: data.no_invoice },
+            { status_report: "success" }
+          );
+        }
         if (s5_date) {
           await Order.updateOne(
             { no_invoice: data.no_invoice },
