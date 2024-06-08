@@ -238,7 +238,39 @@ const user_controller = {
             message: err.message
          })
       }
-   }
+   }, remember_user: async (req,res) => {
+      try {
+        
+         const data = req.user
+         const user= req.user
+         if(!data){
+            res.status(200).json({
+               success: false,
+               data: "user is not exist"
+            })
+         }else{
+            const access_token = generate_access_token({
+               _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp
+            })
+            res.cookie('access_token', access_token, {
+               httpOnly: true,
+               path: "/",
+               sameSite:'None',
+               secure: true,
+            })
+            return res.status(200).json({
+               success: true,
+               data
+            })
+         }
+         
+      } catch (err) {
+         return res.status(500).json({
+            success: false,
+            message: err.message
+         })
+      }
+   },
 }
 
 module.exports = user_controller

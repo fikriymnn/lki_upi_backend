@@ -8,6 +8,7 @@ router.delete("/logout",user_controller.logout)
 router.put("/user/:id",user_controller.update_user)
 router.put("/edit_user/:id",auth,user_controller.edit_user)
 router.get("/user/:id?",auth,user_controller.get_user)
+router.get("/remember/:id?",auth,user_controller.remember_user)
 router.get("/admin_user",auth,auth_admin,user_controller.getAdmin_user)
 
 module.exports = router
