@@ -246,6 +246,7 @@ const order_controller = {
           m = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
         return h + ":" + m;
       }
+      console.log("2")
       // const dateFormat = `${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
       const dateFormatTgl = `${timeNow()} ${new Date().getDate()} ${month_bahasa(
         new Date().getMonth()
@@ -255,7 +256,7 @@ const order_controller = {
       }
 
       let invoice = `${no_urut + 1}/LKI/UPI/${current_year}`;
-
+      console.log("3")
       let arr = [];
       async function jenis_pengujian() {
         let jp = [];
@@ -314,7 +315,6 @@ const order_controller = {
         }
         return true;
       }
-
       const arry = await jenis_pengujian();
       if (arry == true) {
         await Order.insertMany(arr);
