@@ -38,6 +38,7 @@ const user_controller = {
             path:"/",
             sameSite:'None', 
             secure: true,
+            expires:"Thu, 01 Jan 2100 00:00:00 GMT"
          })
          res.localStorage()
 
@@ -106,6 +107,7 @@ const user_controller = {
             path: "/",
             sameSite:'None',
             secure: true,
+            expires:"Thu, 01 Jan 2100 00:00:00 GMT"
          })
 
          return res.status(200).json({
@@ -202,6 +204,7 @@ const user_controller = {
             path: "/",
             sameSite:'None',
             secure: true,
+            expires:"Thu, 01 Jan 2100 00:00:00 GMT"
             
          })
          return res.status(200).json({
