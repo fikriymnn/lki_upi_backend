@@ -32,14 +32,17 @@ const user_controller = {
 
          const user = await User.findOne({ email:body.email })
          const access_token = generate_access_token({ _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, no_whatsapp: user.no_whatsapp,nama_lengkap: body.nama_lengkap })
-
+const millisecondsInDay = 1000 * 60 * 60 * 24;
+  const expiresInMilliseconds = millisecondsInDay * 999;
+ 
          res.cookie("access_token", access_token, {
             httpOnly: true,
             path:"/",
             sameSite:'None', 
             secure: true,
+            expires:new Date(Date.now() + expiresInMilliseconds)
          })
-         res.localStorage()
+        
 
          return res.status(200).json({
             success: true,
@@ -101,11 +104,15 @@ const user_controller = {
             _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp
          })
 
-         res.cookie('access_token', access_token, {
+         const millisecondsInDay = 1000 * 60 * 60 * 24;
+  const expiresInMilliseconds = millisecondsInDay * 999;
+ 
+         res.cookie("access_token", access_token, {
             httpOnly: true,
-            path: "/",
-            sameSite:'None',
+            path:"/",
+            sameSite:'None', 
             secure: true,
+            expires:new Date(Date.now() + expiresInMilliseconds)
          })
 
          return res.status(200).json({
@@ -197,12 +204,15 @@ const user_controller = {
          const access_token = generate_access_token({
             _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp
          })
-         res.cookie('access_token', access_token, {
+         const millisecondsInDay = 1000 * 60 * 60 * 24;
+  const expiresInMilliseconds = millisecondsInDay * 999;
+ 
+         res.cookie("access_token", access_token, {
             httpOnly: true,
-            path: "/",
-            sameSite:'None',
+            path:"/",
+            sameSite:'None', 
             secure: true,
-            
+            expires:new Date(Date.now() + expiresInMilliseconds)
          })
          return res.status(200).json({
             success: true,
@@ -252,12 +262,16 @@ const user_controller = {
             const access_token = generate_access_token({
                _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap,no_whatsapp: user.no_whatsapp
             })
-            res.cookie('access_token', access_token, {
-               httpOnly: true,
-               path: "/",
-               sameSite:'None',
-               secure: true,
-            })
+            const millisecondsInDay = 1000 * 60 * 60 * 24;
+  const expiresInMilliseconds = millisecondsInDay * 999;
+ 
+         res.cookie("access_token", access_token, {
+            httpOnly: true,
+            path:"/",
+            sameSite:'None', 
+            secure: true,
+            expires:new Date(Date.now() + expiresInMilliseconds)
+         })
             return res.status(200).json({
                success: true,
                data
