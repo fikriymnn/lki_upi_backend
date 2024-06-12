@@ -254,15 +254,18 @@ const invoice_controller = {
     hasil_analisis: async (req, res) => {
         try {
             const { id } = req.params;
-            const { task, no_invoice } = req.query
+            const { task, invoice_id } = req.query
             const { hasil_analisis } = req.body;
             await Order.updateOne({ _id: id }, { hasil_analisis })
+            console.log(invoice_id);
             if (task == "operator") {
-                await Invoice.updateOne({ no_invoice: no_invoice }, { opTask: true })
-            } else if (task == "pj") {
-                await Invoice.updateOne({ no_invoice: no_invoice }, { opTask: true })
+                console.log(task);
+                await Invoice.updateOne({ _id: invoice_id }, { opTask: true })
+                res.send("success");
+            }else{
+                res.send("success");
             }
-            res.send("success");
+           
         } catch (err) {
             res.status(500).json({
                 success: false,

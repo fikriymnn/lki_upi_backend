@@ -74,6 +74,10 @@ const invoice_schema = new mongoose.Schema({
     success: {
         type: Boolean,
         default : false
+    },
+    opTask: {
+        type: Boolean,
+        default:false
     }
 })
 
