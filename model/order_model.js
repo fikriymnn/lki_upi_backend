@@ -104,6 +104,10 @@ const order_schema = new mongoose.Schema({
   lama_pengerjaan: {
     type: String,
   },
+  dana_penelitian: {
+    type: Boolean,
+    default: false
+  }
 });
 
 // jurnal_pendukung : {

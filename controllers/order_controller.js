@@ -21,8 +21,6 @@ const order_controller = {
         year,
         no_invoice,
       } = req.query;
-      // skip = parseInt(skip)
-      // limit = parseInt(limit)
 
       if (id) {
         const data = await Order.findOne({ _id: id }).populate("id_user");
@@ -45,7 +43,6 @@ const order_controller = {
           year ||
           no_invoice)
       ) {
-        console.log(`selection`);
         let obj = {};
         if (status_pengujian) {
           obj.status_pengujian = status_pengujian;
@@ -74,7 +71,6 @@ const order_controller = {
         if (no_invoice) {
           obj.no_invoice = no_invoice;
         }
-        console.log(obj);
 
         const data = await Order.aggregate([
           { $match: obj },
@@ -119,7 +115,6 @@ const order_controller = {
           year ||
           no_invoice)
       ) {
-        console.log(`selection`);
         let obj = {};
         if (status_pengujian) {
           obj.status_pengujian = status_pengujian;
@@ -148,7 +143,6 @@ const order_controller = {
         if (no_invoice) {
           obj.no_invoice = no_invoice;
         }
-        console.log(obj);
 
         const data = await Order.aggregate([
           { $match: obj },
@@ -171,7 +165,6 @@ const order_controller = {
           data,
         });
       } else if (skip && limit) {
-        console.log("1");
         const data = await Order.aggregate([
           { $sort: { _id: -1 } },
           {
@@ -196,8 +189,6 @@ const order_controller = {
         const data = await Order.findOne({ no_invoice: no_invoice }).populate(
           "id_user"
         );
-        console.log(data);
-        console.log("goooow");
         res.status(200).json({
           success: true,
           data,
@@ -229,16 +220,10 @@ const order_controller = {
 
   add_order: async (req, res) => {
     try {
-      console.log(req.body);
-      // console.log(req.files)
-      // console.log(req.file.jurnal_pendukung)
-      // console.log(req.file)
-
       const current_year = new Date().getFullYear().toString();
       const month = new Date().getMonth().toString();
       const current_month = month_bahasa(new Date().getMonth());
       let no_urut = 0;
-      console.log("1");
       const data_order = await Invoice.find({ year: new Date().getFullYear() });
       function timeNow() {
         var d = new Date(),
@@ -246,17 +231,15 @@ const order_controller = {
           m = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
         return h + ":" + m;
       }
-      console.log("2")
-      // const dateFormat = `${new Date().getDate()} ${month_bahasa(new Date().getMonth())} ${new Date().getFullYear()}`
       const dateFormatTgl = `${timeNow()} ${new Date().getDate()} ${month_bahasa(
         new Date().getMonth()
       )} ${new Date().getFullYear()}`;
+
       if (data_order.length >= 1) {
         no_urut = data_order.length;
       }
 
       let invoice = `${no_urut + 1}/LKI/UPI/${current_year}`;
-      console.log("3")
       let arr = [];
       async function jenis_pengujian() {
         let jp = [];
@@ -304,6 +287,7 @@ const order_controller = {
               obj.sample_dikembalikan = req.body[i].sample_dikembalikan;
               obj.nama_pembimbing = req.body[i].nama_pembimbing;
               obj.lama_pengerjaan = req.body[i].lama_pengerjaan;
+              obj.dana_penelitian = req.body[i].dana_penelitian;
 
               obj.uuid = req.body[i].uuid;
               arr.push(obj);

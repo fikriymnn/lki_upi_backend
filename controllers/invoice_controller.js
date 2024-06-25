@@ -18,7 +18,7 @@ const invoice_controller = {
         month,
         year,
         success,
-        jenis_pengujian,
+        jenis_pengujian
       } = req.query;
 
       if (id) {
@@ -87,7 +87,6 @@ const invoice_controller = {
           .limit(l);
 
         const length_data = await Invoice.aggregate([{ $match: obj }]);
-
         res.status(200).json({
           success: true,
           length_total: length_data.length,
@@ -145,13 +144,16 @@ const invoice_controller = {
       await Invoice.updateOne({ _id: id }, req.body);
 
       const data = await Invoice.findOne({ _id: id });
-      console.log(req.body);
       if (data) {
         if (total_harga) {
           await Order.updateOne(
             { no_invoice: data.no_invoice },
             { total_harga: total_harga }
           );
+        }
+        if (status == "Order Dibatalkan") {
+          await Invoice.deleteOne({_id:id});
+          await Order.deleteOne({no_invoice : data.no_invoice});
         }
         if (status == "Selesai") {
           await Order.updateOne(
