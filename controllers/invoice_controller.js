@@ -151,10 +151,10 @@ const invoice_controller = {
             { total_harga: total_harga }
           );
         }
-        if (status == "Order Dibatalkan") {
-          await Invoice.deleteOne({_id:id});
-          await Order.deleteOne({no_invoice : data.no_invoice});
-        }
+        // if (status == "Order Dibatalkan") {
+        //   await Invoice.deleteOne({_id:id});
+        //   await Order.deleteOne({no_invoice : data.no_invoice});
+        // }
         if (status == "Selesai") {
           await Order.updateOne(
             { no_invoice: data.no_invoice },
