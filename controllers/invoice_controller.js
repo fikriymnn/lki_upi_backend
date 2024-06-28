@@ -141,8 +141,12 @@ const invoice_controller = {
       const { id } = req.params;
       const { total_harga, s5_date, s6_date, s8_date, status } = req.body;
 
-      await Invoice.updateOne({ _id: id }, req.body);
-
+      if(status=="Order Dibatalkan"){
+        await Invoice.updateOne({ _id: id }, {status:"Sembunyikan",success:true});
+      }else{
+        await Invoice.updateOne({ _id: id }, req.body);
+      }
+      
       const data = await Invoice.findOne({ _id: id });
       if (data) {
         if (total_harga) {
@@ -151,10 +155,6 @@ const invoice_controller = {
             { total_harga: total_harga }
           );
         }
-        // if (status == "Order Dibatalkan") {
-        //   await Invoice.deleteOne({_id:id});
-        //   await Order.deleteOne({no_invoice : data.no_invoice});
-        // }
         if (status == "Selesai") {
           await Order.updateOne(
             { no_invoice: data.no_invoice },

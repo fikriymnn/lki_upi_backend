@@ -263,7 +263,6 @@ const order_controller = {
               });
 
               let obj = {};
-
               let kode = `${
                 req.body[i].kode_pengujian[a]
               }-${current_month}/${current_year}/${data.length + no + 1}`;
