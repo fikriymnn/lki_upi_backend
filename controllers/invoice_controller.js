@@ -162,6 +162,13 @@ const invoice_controller = {
             { status_report: "success" }
           );
         }
+        if (status == "Sembunyikan") {
+          await Order.updateOne(
+            { no_invoice: data.no_invoice },
+            { status_pengujian: "" },
+            { status_report: "" }
+          );
+        }
         if (status == "Menunggu Pembayaran") {
           await Order.updateOne(
             { no_invoice: data.no_invoice },
