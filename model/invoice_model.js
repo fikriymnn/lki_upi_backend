@@ -78,6 +78,9 @@ const invoice_schema = new mongoose.Schema({
     opTask: {
         type: Boolean,
         default:false
+    },
+    catatan: {
+        type: String,
     }
 })
 
