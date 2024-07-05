@@ -33,7 +33,7 @@ const invoice_controller = {
                     obj.jumlah += 1
                     list_jp.push(v.jenis_pengujian)
                     obj.jumlah = v.jumlah_sample
-                    obj.hs = ((v.total_harga / v.jumlah_sample).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
+                    //obj.hs = ((v.total_harga / v.jumlah_sample).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
                     obj.jb = (v.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
                     data_pesan.push(obj)
                 })
@@ -262,10 +262,10 @@ const invoice_controller = {
                 console.log(task);
                 await Invoice.updateOne({ _id: invoice_id }, { opTask: true })
                 res.send("success");
-            }else{
+            } else {
                 res.send("success");
             }
-           
+
         } catch (err) {
             res.status(500).json({
                 success: false,
