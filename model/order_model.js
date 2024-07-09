@@ -53,10 +53,10 @@ const order_schema = new mongoose.Schema({
     type: Number,
   },
   wujud_sample: {
-    type: String,
+   type: String,
   },
   pelarut: {
-    type: String,
+   type: String,
   },
   preparasi_khusus: {
     type: Boolean,
@@ -107,6 +107,7 @@ const order_schema = new mongoose.Schema({
   dana_penelitian: {
     type: Boolean,
     default: false
+    
   }
 });
 
