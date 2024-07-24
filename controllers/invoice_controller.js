@@ -155,12 +155,24 @@ const invoice_controller = {
             { total_harga: total_harga }
           );
         }
-        if (status == "Selesai") {
+        
+        if(status == "Selesai"&&s8_date){
+          await Order.updateOne(
+            { no_invoice: data?.no_invoice },
+            { status_pengujian: "success",status_report: "success",admin_date: s8_date  }
+          );
+        } else if (status == "Selesai") {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
             { status_pengujian: "success",status_report: "success"  }
           );
+        }else if (s8_date) {
+          await Order.updateOne(
+            { no_invoice: data?.no_invoice },
+            { admin_date: s8_date, }
+          );
         }
+
         if (status == "Sembunyikan") {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
@@ -186,12 +198,7 @@ const invoice_controller = {
           );
           console.log(s6_date);
         }
-        if (s8_date) {
-          await Order.updateOne(
-            { no_invoice: data?.no_invoice },
-            { admin_date: s8_date, }
-          );
-        }
+       
        
       }
       res.status(200).json({
