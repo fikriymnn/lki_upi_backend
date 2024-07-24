@@ -194,12 +194,13 @@ const invoice_controller = {
             { admin_date: s8_date }
           );
         }
-        res.status(200).json({
-          success: true,
-          message: "Update successfully!",
-          data,
-        });
+       
       }
+      res.status(200).json({
+        success: true,
+        message: "Update successfully!",
+        data,
+      });
     } catch (err) {
       res.status(500).json({
         success: false,
