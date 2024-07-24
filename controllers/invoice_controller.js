@@ -151,47 +151,45 @@ const invoice_controller = {
       if (data) {
         if (total_harga) {
           await Order.updateOne(
-            { no_invoice: data.no_invoice },
+            { no_invoice: data?.no_invoice },
             { total_harga: total_harga }
           );
         }
         if (status == "Selesai") {
           await Order.updateOne(
-            { no_invoice: data.no_invoice },
-            { status_pengujian: "success" },
-            { status_report: "success" }
+            { no_invoice: data?.no_invoice },
+            { status_pengujian: "success",status_report: "success"  }
           );
         }
         if (status == "Sembunyikan") {
           await Order.updateOne(
-            { no_invoice: data.no_invoice },
-            { status_pengujian: "" },
-            { status_report: "" }
+            { no_invoice: data?.no_invoice },
+            { status_pengujian: "",status_report: "" },
           );
         }
         // if (status == "Menunggu Pembayaran") {
         //   await Order.updateOne(
-        //     { no_invoice: data.no_invoice },
+        //     { no_invoice: data?.no_invoice },
         //     { status_report: "success" }
         //   );
         // }
         if (s5_date) {
           await Order.updateOne(
-            { no_invoice: data.no_invoice },
+            { no_invoice: data?.no_invoice },
             { operator_date: s5_date }
           );
         }
         if (s6_date) {
           await Order.updateOne(
-            { no_invoice: data.no_invoice },
+            { no_invoice: data?.no_invoice },
             { pj_date: s6_date }
           );
           console.log(s6_date);
         }
         if (s8_date) {
           await Order.updateOne(
-            { no_invoice: data.no_invoice },
-            { admin_date: s8_date }
+            { no_invoice: data?.no_invoice },
+            { admin_date: s8_date, }
           );
         }
        
