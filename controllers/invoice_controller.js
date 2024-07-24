@@ -159,7 +159,7 @@ const invoice_controller = {
         if(status == "Selesai"&&s8_date){
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { status_pengujian: "success",status_report: "success",admin_date: s8_date  }
+            { status_pengujian: "success", status_report: "success",admin_date: s8_date  }
           );
         } else if (status == "Selesai") {
           await Order.updateOne(
