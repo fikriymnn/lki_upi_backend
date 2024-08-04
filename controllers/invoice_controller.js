@@ -2,6 +2,7 @@ const Invoice = require("../model/invoice_model");
 const month_bahasa = require("../utils/month_bahasa");
 const Order = require("../model/order_model");
 const mongoose = require("mongoose");
+const user_model = require("../model/user_model");
 
 const invoice_controller = {
   get_invoice: async (req, res) => {
@@ -18,8 +19,10 @@ const invoice_controller = {
         month,
         year,
         success,
-        jenis_pengujian
+        jenis_pengujian,
+        nama_lengkap
       } = req.query;
+      console.log(nama_lengkap)
 
       if (id) {
         const data = await Invoice.findOne({ _id: id })
@@ -30,6 +33,84 @@ const invoice_controller = {
           success: true,
           data: data,
         });
+      }else if (
+        nama_lengkap &&
+        skip &&
+        limit &&
+        (status ||
+          no_invoice ||
+          id_user ||
+          from ||
+          to ||
+          month ||
+          year ||
+          success ||
+          jenis_pengujian)
+      ){
+        console.log("nama lengkap")
+        let obj = {
+
+        };
+        const s = parseInt(skip);
+        const l = parseInt(limit);
+        if (status) {
+          obj.status = status;
+        }
+        if (id_user) {
+          obj.id_user = new mongoose.Types.ObjectId(id_user);
+        }
+        if (no_invoice) {
+          obj.no_invoice = no_invoice;
+        }
+        if (from && to) {
+          obj.date = { $lt: to, $gt: from };
+        }
+        if (year) {
+          obj.year = year;
+        }
+        if (month) {
+          obj.month = month;
+        }
+        if (success) {
+          obj.success = success == "true" ? true : false;
+        }
+        if (jenis_pengujian) {
+          obj.jenis_pengujian = jenis_pengujian;
+        }
+
+        const dataUser = await user_model.findOne({nama_lengkap:{ $regex: nama_lengkap,$options: 'i'} }
+        )
+
+        if(dataUser){
+          obj.id_user = dataUser._id
+          console.log(dataUser)
+          const data = await Invoice.aggregate([
+            
+            { $match: obj, },
+            {
+              $lookup: {
+                foreignField: "_id",
+                localField: "id_user",
+                from: "users",
+                as: "id_user",
+              },
+            },
+            { $sort: { _id: -1 } },
+          ])
+            .skip(s)
+            .limit(l);
+  
+          const length_data = await Invoice.aggregate([{ $match: obj }]);
+          res.status(200).json({
+            success: true,
+            length_total: length_data.length,
+            data,
+          });
+        }
+
+        
+
+
       } else if (
         skip &&
         limit &&

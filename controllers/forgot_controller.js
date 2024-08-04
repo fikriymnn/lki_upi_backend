@@ -27,17 +27,17 @@ const forgot_controller = {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'luthfikhaeri00@gmail.com',
-        pass: 'your_password'
+        user: 'lablkiupi@gmail.com',
+        pass: 'lablki123'
       }
     });
 
     // Opsi email
     const mailOptions = {
-      from: 'luthfikhaeri00@gmail.com',
+      from: 'lablkiupi@gmail.com',
       to: email,
       subject: 'Verifikasi Email LKI UPI',
-      html: `<a href="https://www.lablkiupi.com/updatePassword/${email_encrypt}>Klik Untuk Ubah Password</a>`
+      html: `<a href="http://localhost:3000/lupapassword/${email_encrypt}>Klik Untuk Ubah Password</a>`
     };
 
     // Kirim email
@@ -60,8 +60,7 @@ const forgot_controller = {
           res.status(400).json({message: "Token tidak valid"})
         }
         const payload  = jwt.verify(token,process.env.ACC_TOKEN_SECRET)
-        console.log(payload)
-        res.status(200).json({message:"success",success:true})
+        res.status(200).json({message:"success",success:true,payload})
     }catch(err){
       res.status(500).json({message:err.message,success:false})
     }
