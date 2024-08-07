@@ -28,7 +28,7 @@ const forgot_controller = {
       service: 'gmail',
       auth: {
         user: 'lablkiupi@gmail.com',
-        pass: 'lablki123'
+        pass: 'cggm arxg rpci cwzi'
       }
     });
 
@@ -37,7 +37,7 @@ const forgot_controller = {
       from: 'lablkiupi@gmail.com',
       to: email,
       subject: 'Verifikasi Email LKI UPI',
-      html: `<a href="http://localhost:3000/lupapassword/${email_encrypt}>Klik Untuk Ubah Password</a>`
+      html: `klik link berikut http://localhost:3000/lupapassword/${email_encrypt}`
     };
 
     // Kirim email
@@ -78,8 +78,7 @@ const forgot_controller = {
         res.status(400).json({message: "Password tidak kosong"})
       }
       const new_password = await bcrypt.hash(password, 10)
-      await Users.updateOne({email},{password:new_password})
-      
+      const data = await Users.updateOne({email},{password:new_password})
       res.status(200).json({message:"success",success:true})
     }catch(err){
       res.status(500).json({message:err.message,success:false})
