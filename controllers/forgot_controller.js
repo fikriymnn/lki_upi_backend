@@ -14,8 +14,8 @@ const forgot_controller = {
     
     const data = await Users.findOne({email})
     if(!data){
-      res.status(400).json({message: "Email tidak valid"})
-    }
+      res.status(400).json({message: "Email tidak valid",success:false})
+    }else{
     
     const email_encrypt = generate_access_token({email})
     
@@ -45,10 +45,12 @@ const forgot_controller = {
       if (error) {
         console.log(error);
       } else {
+
         console.log('Email sent: ' + info.response);
       }
     });
-    res.status(200).json({message:"success",success:true})
+    res.status(200).json({message:"success",success:true})}
+    
   }catch(err){
     res.status(500).json({message:err.message,success:false})
   }
