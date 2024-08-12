@@ -37,7 +37,7 @@ const forgot_controller = {
       from: 'lablkiupi@gmail.com',
       to: email,
       subject: 'Verifikasi Email LKI UPI',
-      html: `klik link berikut https://lablkiupi/lupapassword/${email_encrypt}`
+      html: `klik link berikut https://lablkiupi.com/lupapassword/${email_encrypt}`
     };
 
     // Kirim email
