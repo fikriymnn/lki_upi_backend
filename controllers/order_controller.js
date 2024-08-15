@@ -205,6 +205,12 @@ const order_controller = {
             },
           },
         ]);
+        //  data.forEach((v,i)=>{
+        //   async function cek(){
+        //     await Order.findByIdAndUpdate(v._id,{nama_lengkap : v.id_user[0].nama_lengkap})
+        //   } 
+        //  cek()
+        // })
         res.status(200).json({
           success: true,
           data,
@@ -271,6 +277,7 @@ const order_controller = {
               )} ${new Date().getFullYear()}`;
 
               obj.id_user = req.user._id;
+              obj.nama_lengkap = req.user.nama_lengkap;
               obj.no_invoice = invoice;
               obj.jenis_pengujian = req.body[i].jenis_pengujian[a];
               obj.kode_pengujian = kode;
@@ -305,6 +312,7 @@ const order_controller = {
           no_invoice: invoice,
           total_harga: 0,
           estimasi_harga: 0,
+          nama_lengkap : req.user.nama_lengkap,
           id_user: req.user._id,
           status: "menunggu form dikonfirmasi",
           jenis_pengujian: req.body[0].jenis_pengujian[0],

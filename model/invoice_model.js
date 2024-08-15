@@ -16,6 +16,9 @@ const invoice_schema = new mongoose.Schema({
         type: String,
         
     },
+    nama_lengkap: {
+        type: String,
+    },
     year: {
         type: String,
         default: new Date().getFullYear().toString()

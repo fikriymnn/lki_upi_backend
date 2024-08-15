@@ -45,7 +45,7 @@ const invoice_controller = {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/invoice.docx'));
                 // 2. process the template
                 const data = {
-                    nama: invoice.id_user.nama_lengkap,
+                    nama: invoice.nama_lengkap,
                     instansi: invoice.id_user.nama_institusi,
                     nosurat: no_invoice,
                     tanggal: invoice.date_format,
@@ -135,7 +135,7 @@ const invoice_controller = {
 
                 const values = {
                     tanggal: data_invoice.no_invoice,
-                    penerima: data_invoice?.id_user?.nama_lengkap,
+                    penerima: data_invoice.nama_lengkap,
                     jenisjasa: deskripsi,
                     total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,

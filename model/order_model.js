@@ -108,6 +108,9 @@ const order_schema = new mongoose.Schema({
     type: Boolean,
     default: false
     
+  },
+  nama_lengkap: {
+    type: String,
   }
 });
 

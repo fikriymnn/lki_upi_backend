@@ -22,7 +22,7 @@ const invoice_controller = {
         jenis_pengujian,
         nama_lengkap
       } = req.query;
-      console.log(nama_lengkap)
+      
 
       if (id) {
         const data = await Invoice.findOne({ _id: id })
@@ -205,6 +205,13 @@ const invoice_controller = {
           },
           { $sort: { _id: -1 } },
         ]);
+        // data.forEach((v,i)=>{
+        //   async function cek(){
+        //     await Invoice.findByIdAndUpdate(v._id,{nama_lengkap : v.id_user[0].nama_lengkap})
+        //   } 
+        //  cek()
+        // })
+       
         res.status(200).json({
           success: true,
           data,
