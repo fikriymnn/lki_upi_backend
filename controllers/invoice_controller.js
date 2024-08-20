@@ -243,6 +243,12 @@ const invoice_controller = {
             { total_harga: total_harga }
           );
         }
+        if(status=="Menunggu Pembayaran"){
+          await Order.updateOne(
+            { no_invoice: data?.no_invoice },
+            { status_pengujian: "prasuccess", status_report: "success",admin_date: s8_date  }
+          );
+        }
         
         if(status == "Selesai"&&s8_date){
           await Order.updateOne(
