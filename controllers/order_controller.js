@@ -21,6 +21,7 @@ const order_controller = {
         year,
         no_invoice,
       } = req.query;
+      console.log(status_pengujian)
 
       if (id) {
         const data = await Order.findOne({ _id: id }).populate("id_user");
@@ -94,6 +95,7 @@ const order_controller = {
           .skip(parseInt(skip))
           .limit(parseInt(limit));
 
+
         const length_data = await Order.aggregate([{ $match: obj }]);
 
         res.status(200).json({
@@ -115,6 +117,7 @@ const order_controller = {
           year ||
           no_invoice)
       ) {
+        
         let obj = {};
         if (status_pengujian) {
           obj.status_pengujian = status_pengujian;
@@ -158,6 +161,7 @@ const order_controller = {
         ])
           .skip(parseInt(skip))
           .limit(parseInt(limit));
+          console.log(data)
         const length_data = await Order.aggregate([{ $match: obj }]);
         res.status(200).json({
           success: true,
@@ -194,6 +198,8 @@ const order_controller = {
           data,
         });
       } else {
+        await Order.updateMany({"status_pengujian": "prasuccess"}, {"$set":{"status_pengujian": "success"}})
+        
         const data = await Order.aggregate([
           { $sort: { _id: -1 } },
           {

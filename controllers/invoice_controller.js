@@ -23,7 +23,7 @@ const invoice_controller = {
         nama_lengkap
       } = req.query;
       
-
+      console.log(status)
       if (id) {
         const data = await Invoice.findOne({ _id: id })
           .populate("id_user")
@@ -51,6 +51,7 @@ const invoice_controller = {
         let obj = {
 
         };
+    
         const s = parseInt(skip);
         const l = parseInt(limit);
         if (status) {
@@ -124,6 +125,7 @@ const invoice_controller = {
           success ||
           jenis_pengujian)
       ) {
+        console.log(status)
         let obj = {};
         const s = parseInt(skip);
         const l = parseInt(limit);
@@ -246,7 +248,7 @@ const invoice_controller = {
         if(status=="Menunggu Pembayaran"){
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { status_pengujian: "prasuccess", status_report: "success",admin_date: s8_date  }
+            { status_pengujian: "success", status_report: "success",admin_date: s8_date  }
           );
         }
         
