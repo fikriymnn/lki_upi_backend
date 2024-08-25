@@ -22,18 +22,17 @@ const invoice_controller = {
         jenis_pengujian,
         nama_lengkap
       } = req.query;
-      
+
       console.log(status)
       if (id) {
         const data = await Invoice.findOne({ _id: id })
           .populate("id_user")
           .select({ id_user: { _id: 0 } });
-        console.log(data);
         res.status(200).json({
           success: true,
           data: data,
         });
-      }else if (
+      } else if (
         nama_lengkap &&
         skip &&
         limit &&
@@ -46,16 +45,20 @@ const invoice_controller = {
           year ||
           success ||
           jenis_pengujian)
-      ){
+      ) {
         console.log("nama lengkap")
         let obj = {
 
         };
-    
+
         const s = parseInt(skip);
         const l = parseInt(limit);
         if (status) {
-          obj.status = status;
+          if(status instanceof Array){
+            obj.status = {$in:status};
+          }else{
+            obj.status = status;
+          }
         }
         if (id_user) {
           obj.id_user = new mongoose.Types.ObjectId(id_user);
@@ -79,14 +82,14 @@ const invoice_controller = {
           obj.jenis_pengujian = jenis_pengujian;
         }
 
-        const dataUser = await user_model.findOne({nama_lengkap:{ $regex: nama_lengkap,$options: 'i'} }
+        const dataUser = await user_model.findOne({ nama_lengkap: { $regex: nama_lengkap, $options: 'i' } }
         )
 
-        if(dataUser){
+        if (dataUser) {
           obj.id_user = dataUser._id
           console.log(dataUser)
           const data = await Invoice.aggregate([
-            
+
             { $match: obj, },
             {
               $lookup: {
@@ -100,7 +103,7 @@ const invoice_controller = {
           ])
             .skip(s)
             .limit(l);
-  
+
           const length_data = await Invoice.aggregate([{ $match: obj }]);
           res.status(200).json({
             success: true,
@@ -109,7 +112,7 @@ const invoice_controller = {
           });
         }
 
-        
+
 
 
       } else if (
@@ -125,12 +128,16 @@ const invoice_controller = {
           success ||
           jenis_pengujian)
       ) {
-        console.log(status)
         let obj = {};
         const s = parseInt(skip);
         const l = parseInt(limit);
         if (status) {
-          obj.status = status;
+          if(status instanceof Array){
+            obj.status = {$in:status};
+          }else{
+            obj.status = status;
+          }
+
         }
         if (id_user) {
           obj.id_user = new mongoose.Types.ObjectId(id_user);
@@ -168,7 +175,6 @@ const invoice_controller = {
         ])
           .skip(s)
           .limit(l);
-
         const length_data = await Invoice.aggregate([{ $match: obj }]);
         res.status(200).json({
           success: true,
@@ -207,13 +213,14 @@ const invoice_controller = {
           },
           { $sort: { _id: -1 } },
         ]);
+
         // data.forEach((v,i)=>{
         //   async function cek(){
         //     await Invoice.findByIdAndUpdate(v._id,{nama_lengkap : v.id_user[0].nama_lengkap})
         //   } 
         //  cek()
         // })
-       
+
         res.status(200).json({
           success: true,
           data,
@@ -231,12 +238,12 @@ const invoice_controller = {
       const { id } = req.params;
       const { total_harga, s5_date, s6_date, s8_date, status } = req.body;
 
-      if(status=="Order Dibatalkan"){
-        await Invoice.updateOne({ _id: id }, {status:"Sembunyikan",success:true});
-      }else{
+      if (status == "Order Dibatalkan") {
+        await Invoice.updateOne({ _id: id }, { status: "Sembunyikan", success: true });
+      } else {
         await Invoice.updateOne({ _id: id }, req.body);
       }
-      
+
       const data = await Invoice.findOne({ _id: id });
       if (data) {
         if (total_harga) {
@@ -245,24 +252,24 @@ const invoice_controller = {
             { total_harga: total_harga }
           );
         }
-        if(status=="Menunggu Pembayaran"){
+        if (status == "Menunggu Pembayaran") {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { status_pengujian: "success", status_report: "success",admin_date: s8_date  }
+            { status_pengujian: "success", status_report: "success", admin_date: s8_date }
           );
         }
-        
-        if(status == "Selesai"&&s8_date){
+
+        if (status == "Selesai" && s8_date) {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { status_pengujian: "success", status_report: "success",admin_date: s8_date  }
+            { status_pengujian: "success", status_report: "success", admin_date: s8_date }
           );
         } else if (status == "Selesai") {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { status_pengujian: "success",status_report: "success"  }
+            { status_pengujian: "success", status_report: "success" }
           );
-        }else if (s8_date) {
+        } else if (s8_date) {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
             { admin_date: s8_date, }
@@ -272,7 +279,7 @@ const invoice_controller = {
         if (status == "Sembunyikan") {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { status_pengujian: "",status_report: "" },
+            { status_pengujian: "", status_report: "" },
           );
         }
         // if (status == "Menunggu Pembayaran") {
@@ -294,8 +301,8 @@ const invoice_controller = {
           );
           console.log(s6_date);
         }
-       
-       
+
+
       }
       res.status(200).json({
         success: true,

@@ -309,7 +309,7 @@ const invoice_controller = {
                 { _id: id },
                 {
                     bukti_pembayaran: bukti_pembayaran,
-                    status: "menunggu konfirmasi pembayaran",
+                    status: "Menunggu Konfirmasi Pembayaran",
                     s7_date: `${timeNow()} ${new Date().getDate()} ${month_bahasa(
                         new Date().getMonth()
                     )} ${new Date().getFullYear()}`,
