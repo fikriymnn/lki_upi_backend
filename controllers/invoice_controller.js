@@ -278,9 +278,17 @@ const invoice_controller = {
           );
         }
 
+        if (status == "Order Dibatalkan") {
+          await Order.updateOne(
+            { no_invoice: data?.no_invoice },
+            { status_pengujian: "-", status_report: "-" },
+          );
+        }
+
         if (status == "Sembunyikan") {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
+            
             { status_pengujian: "-", status_report: "-" },
           );
         }
