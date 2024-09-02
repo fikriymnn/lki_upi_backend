@@ -23,7 +23,6 @@ const invoice_controller = {
         nama_lengkap
       } = req.query;
 
-      console.log(status)
       if (id) {
         const data = await Invoice.findOne({ _id: id })
           .populate("id_user")
@@ -46,7 +45,6 @@ const invoice_controller = {
           success ||
           jenis_pengujian)
       ) {
-        console.log("nama lengkap")
         let obj = {
 
         };
@@ -87,7 +85,6 @@ const invoice_controller = {
 
         if (dataUser) {
           obj.id_user = dataUser._id
-          console.log(dataUser)
           const data = await Invoice.aggregate([
 
             { $match: obj, },
@@ -111,10 +108,6 @@ const invoice_controller = {
             data,
           });
         }
-
-
-
-
       } else if (
         skip &&
         limit &&
@@ -160,7 +153,6 @@ const invoice_controller = {
         if (jenis_pengujian) {
           obj.jenis_pengujian = jenis_pengujian;
         }
-        console.log(obj)
 
         const data = await Invoice.aggregate([
           { $match: obj },
@@ -177,7 +169,6 @@ const invoice_controller = {
           .skip(s)
           .limit(l);
         const length_data = await Invoice.aggregate([{ $match: obj }]);
-        console.log(data)
         res.status(200).json({
           success: true,
           length_total: length_data.length,

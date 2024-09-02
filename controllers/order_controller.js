@@ -21,7 +21,7 @@ const order_controller = {
         year,
         no_invoice,
       } = req.query;
-      console.log(status_pengujian)
+
 
       if (id) {
         const data = await Order.findOne({ _id: id }).populate("id_user");
@@ -161,7 +161,6 @@ const order_controller = {
         ])
           .skip(parseInt(skip))
           .limit(parseInt(limit));
-          console.log(data)
         const length_data = await Order.aggregate([{ $match: obj }]);
         res.status(200).json({
           success: true,
