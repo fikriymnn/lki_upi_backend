@@ -116,7 +116,7 @@ const invoice_controller = {
             async function deskripsi_function() {
                 let deskripsi = "Analisis"
                 let jenis_pengujian = []
-                const order = await Order.find({ no_invoice: data_invoice.no_invoice })
+                
 
                 // order.forEach((v, i) => {
                 //     if (!jenis_pengujian.includes(v.jenis_pengujian)) {
@@ -128,20 +128,19 @@ const invoice_controller = {
 
                 // })
                 if (order) {
-                    return `Analisis ${order[0].jenis_pengujian}`
+                    return 
                 }
 
             }
             const dateString = data_invoice?.s8_date?.split(' ')
             const deskripsi = await deskripsi_function()
-            if (deskripsi) {
+            const order = await Order.find({ no_invoice: data_invoice.no_invoice })
+            if (order) {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
-
-
                 const values = {
                     tanggal: data_invoice.no_invoice,
                     penerima: data_invoice.nama_lengkap,
-                    jenisjasa: deskripsi,
+                    jenisjasa: `Analisis ${order[0].jenis_pengujian}`,
                     total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                     terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
