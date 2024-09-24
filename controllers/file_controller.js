@@ -130,15 +130,13 @@ const invoice_controller = {
                 return deskripsi
             }
             const dateString = data_invoice?.s8_date?.split(' ')
-            const deskripsi = `analisis ${data_invoice?.jenis_pengujian}`
-
-            if (deskripsi) {
+                console.log(deskripsi)
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
                 const handler = new TemplateHandler();
                     const doc = await handler.process(templateFile, {
                         tanggal: data_invoice.no_invoice,
                         penerima: data_invoice.nama_lengkap,
-                        jenisjasa: deskripsi,
+                        jenisjasa: `analisis ${data_invoice?.jenis_pengujian}`,
                         total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                         tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                         terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
@@ -172,7 +170,7 @@ const invoice_controller = {
                         }, 1500)
     
                     });
-                  }
+                  
                 
             
         } catch (err) {
