@@ -10,7 +10,7 @@ const fs = require("fs");
 const path = require("path");
 const replaceTextInPDF = require("../utils/pdfreplace.js");
 const angkaketext = require("../utils/angkatotext.js");
-var convertapi = require("convertapi")("secret_IJQlYTqvknwDUPLm");
+var convertapi = require("convertapi")("secret_RMft4Uq7sVRfHK63");
 
 const invoice_controller = {
     get_invoice: async (req, res) => {
@@ -53,13 +53,12 @@ const invoice_controller = {
                     total: (invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     jumlah: order[0].jumlah_sample,
                 }
-
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, data);
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}`
                 const filePath = path.join(`/tmp/${fileName}.docx`);
-
+                console.log("1")
                 fs.writeFileSync(filePath, doc);
                 const outputPath = path.join(`/tmp/${fileName}.pdf`);
                 // replaceTextInPDF(filePath,outputPath)
@@ -118,21 +117,20 @@ const invoice_controller = {
                 let deskripsi = "Analisis"
                 let jenis_pengujian = []
                 const order = await Order.find({ no_invoice: data_invoice.no_invoice })
-
+               
                 order.forEach((v, i) => {
-                    deskripsi += `${v.jenis_pengujian}`
-                    // if (!jenis_pengujian.includes(v.jenis_pengujian)) {
-                    //     deskripsi += `${v.jenis_pengujian}`
+                    if (!jenis_pengujian.includes(v.jenis_pengujian)) {
+                        deskripsi += ` ${v.jenis_pengujian}`
                         
-                    //     jenis_pengujian.push(v.jenis_pengujian)
-                    // }
+                        jenis_pengujian.push(v.jenis_pengujian)
+                        console.log(deskripsi)
+                    }
                     
                 })
                 return deskripsi
             }
             const dateString = data_invoice?.s8_date?.split(' ')
             const deskripsi = await deskripsi_function()
-
             if (deskripsi) {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
 
