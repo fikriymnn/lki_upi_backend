@@ -117,17 +117,20 @@ const invoice_controller = {
                 let deskripsi = "Analisis"
                 let jenis_pengujian = []
                 const order = await Order.find({ no_invoice: data_invoice.no_invoice })
-               
-                order.forEach((v, i) => {
-                    if (!jenis_pengujian.includes(v.jenis_pengujian)) {
-                        deskripsi += ` ${v.jenis_pengujian}`
-                        
-                        jenis_pengujian.push(v.jenis_pengujian)
-                        console.log(deskripsi)
-                    }
-                    
-                })
-                return deskripsi
+
+                // order.forEach((v, i) => {
+                //     if (!jenis_pengujian.includes(v.jenis_pengujian)) {
+                //         deskripsi += ` ${v.jenis_pengujian}`
+
+                //         jenis_pengujian.push(v.jenis_pengujian)
+                //         console.log(deskripsi)
+                //     }
+
+                // })
+                if (order) {
+                    return `Analisis ${order[0].jenis_pengujian}`
+                }
+
             }
             const dateString = data_invoice?.s8_date?.split(' ')
             const deskripsi = await deskripsi_function()
