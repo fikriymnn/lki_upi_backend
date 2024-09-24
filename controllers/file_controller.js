@@ -134,19 +134,15 @@ const invoice_controller = {
 
             if (deskripsi) {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
-                let values = {
-                    tanggal: data_invoice.no_invoice,
-                    penerima: data_invoice.nama_lengkap,
-                    jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
-                    total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
-                    tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                    terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
-                };
-                console.log(values)
                 const handler = new TemplateHandler();
-                setTimeout(()=>{
-                  async function cek(){
-                    const doc = await handler.process(templateFile, values);
+                    const doc = await handler.process(templateFile, {
+                        tanggal: data_invoice.no_invoice,
+                        penerima: data_invoice.nama_lengkap,
+                        jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
+                        total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
+                        tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
+                        terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
+                    });
 
                     const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
                     const filePath = path.join(`/tmp/${fileName}.docx`);
@@ -177,11 +173,8 @@ const invoice_controller = {
     
                     });
                   }
-
-                  cek()
-                },2000)
                 
-            }
+            
         } catch (err) {
             res.status(500).json({
                 success: false,
