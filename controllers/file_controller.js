@@ -133,14 +133,15 @@ const invoice_controller = {
                 console.log(deskripsi)
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
                 const handler = new TemplateHandler();
-                    const doc = await handler.process(templateFile, {
-                        tanggal: data_invoice.no_invoice,
-                        penerima: data_invoice.nama_lengkap,
-                        jenisjasa: `analisis ${data_invoice?.jenis_pengujian}`,
-                        total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
-                        tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                        terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
-                    });
+                let value = {
+                    tanggal: data_invoice.no_invoice,
+                    penerima: data_invoice.nama_lengkap,
+                    jenisjasa: `analisis ${data_invoice?.jenis_pengujian}`,
+                    total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
+                    tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
+                    terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
+                }
+                    const doc = await handler.process(templateFile, value);
 
                     const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
                     const filePath = path.join(`/tmp/${fileName}.docx`);
