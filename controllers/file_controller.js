@@ -53,13 +53,13 @@ const invoice_controller = {
                     total: (invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     jumlah: order[0].jumlah_sample,
                 }
-                
+
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, data);
                 // 3. send output
                 const fileName = `${new Date().toISOString().slice(0, 10)}-${invoice.id_user.nama_lengkap.replace(" ", "_")}`
                 const filePath = path.join(`/tmp/${fileName}.docx`);
-                console.log("1")
+
                 fs.writeFileSync(filePath, doc);
                 const outputPath = path.join(`/tmp/${fileName}.pdf`);
                 // replaceTextInPDF(filePath,outputPath)
