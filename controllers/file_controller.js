@@ -144,36 +144,43 @@ const invoice_controller = {
                 };
                 console.log(values)
                 const handler = new TemplateHandler();
-                const doc = await handler.process(templateFile, values);
+                setTimeout(()=>{
+                  async function cek(){
+                    const doc = await handler.process(templateFile, values);
 
-                const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
-                const filePath = path.join(`/tmp/${fileName}.docx`);
-                fs.writeFileSync(filePath, doc);
-                const outputPath = path.join(`/tmp/${fileName}.pdf`);
-                // const cek = await replaceTextInPDF(filePath,outputPath)
-                console.log("1")
-
-                await convertapi.convert('pdf', {
-                    File: filePath
-                }, 'docx').then(function (result) {
-                    result.saveFiles(outputPath);
-                    console.log('Penggantian teks selesai. File hasil disimpan di:', outputPath);
-                    setTimeout(() => {
-                        res.download(outputPath, `${fileName}.pdf`, (err) => {
-                            if (err) {
-                                console.error({ err });
-                                res.status(500).send('Internal server error');
+                    const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
+                    const filePath = path.join(`/tmp/${fileName}.docx`);
+                    fs.writeFileSync(filePath, doc);
+                    const outputPath = path.join(`/tmp/${fileName}.pdf`);
+                    // const cek = await replaceTextInPDF(filePath,outputPath)
+                    console.log("1")
+    
+                    await convertapi.convert('pdf', {
+                        File: filePath
+                    }, 'docx').then(function (result) {
+                        result.saveFiles(outputPath);
+                        console.log('Penggantian teks selesai. File hasil disimpan di:', outputPath);
+                        setTimeout(() => {
+                            res.download(outputPath, `${fileName}.pdf`, (err) => {
+                                if (err) {
+                                    console.error({ err });
+                                    res.status(500).send('Internal server error');
+                                    fs.unlinkSync(`${outputPath}`)
+                                    fs.unlinkSync(`${filePath}`)
+                                }
                                 fs.unlinkSync(`${outputPath}`)
                                 fs.unlinkSync(`${filePath}`)
-                            }
-                            fs.unlinkSync(`${outputPath}`)
-                            fs.unlinkSync(`${filePath}`)
+    
+    
+                            });
+                        }, 1500)
+    
+                    });
+                  }
 
-
-                        });
-                    }, 1500)
-
-                });
+                  cek()
+                },2000)
+                
             }
         } catch (err) {
             res.status(500).json({
