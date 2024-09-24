@@ -53,6 +53,7 @@ const invoice_controller = {
                     total: (invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     jumlah: order[0].jumlah_sample,
                 }
+                
                 const handler = new TemplateHandler();
                 const doc = await handler.process(templateFile, data);
                 // 3. send output
