@@ -114,13 +114,13 @@ const invoice_controller = {
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
             async function deskripsi_function() {
-                let deskripsi = ""
+                let deskripsi = "Analisis"
                 let jenis_pengujian = []
                 const order = await Order.find({ no_invoice: data_invoice.no_invoice })
 
                 order.forEach((v, i) => {
-                    if (!jenis_pengujian.includes(v.jenis_pengujian)) {
-                        deskripsi = `Analisis ${v.jenis_pengujian}`
+                    if (jenis_pengujian.includes(v.jenis_pengujian)) {
+                        deskripsi += ` ${v.jenis_pengujian}`
                         jenis_pengujian.push(v.jenis_pengujian)
                     }
                 })
