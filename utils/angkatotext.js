@@ -1,5 +1,5 @@
 module.exports = angkaKeTeks = (angka)=>{
-    const angkaHuruf = ['Nol', 'Sa', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan'];
+    const angkaHuruf = ['Nol', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan'];
     const satuanHuruf = ['', 'Ribu', 'Juta'];
     let teks = '';
     
