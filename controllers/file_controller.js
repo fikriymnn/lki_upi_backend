@@ -130,7 +130,7 @@ const invoice_controller = {
                 return deskripsi
             }
             const dateString = data_invoice?.s8_date?.split(' ')
-            const deskripsi = await deskripsi_function()
+            const deskripsi = `analisis ${data_invoice?.jenis_pengujian}`
 
             if (deskripsi) {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
