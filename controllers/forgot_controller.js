@@ -18,7 +18,6 @@ const forgot_controller = {
     }else{
     
     const email_encrypt = generate_access_token({email})
-    
 
 
     const nodemailer = require('nodemailer');

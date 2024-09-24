@@ -119,10 +119,13 @@ const invoice_controller = {
                 const order = await Order.find({ no_invoice: data_invoice.no_invoice })
 
                 order.forEach((v, i) => {
-                    if (!jenis_pengujian.includes(v.jenis_pengujian)) {
-                        deskripsi += ` ${v.jenis_pengujian}`
-                        jenis_pengujian.push(v.jenis_pengujian)
-                    }
+                    deskripsi += `${v.jenis_pengujian}`
+                    // if (!jenis_pengujian.includes(v.jenis_pengujian)) {
+                    //     deskripsi += `${v.jenis_pengujian}`
+                        
+                    //     jenis_pengujian.push(v.jenis_pengujian)
+                    // }
+                    
                 })
                 return deskripsi
             }
