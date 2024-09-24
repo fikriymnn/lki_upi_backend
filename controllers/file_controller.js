@@ -114,7 +114,7 @@ const invoice_controller = {
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
             async function deskripsi_function() {
-                let deskripsi = "Analisis"
+                let deskripsi = "Analisiss"
                 let jenis_pengujian = []
                 const order = await Order.find({ no_invoice: data_invoice.no_invoice })
                
