@@ -121,7 +121,7 @@ const invoice_controller = {
                 order.forEach((v, i) => {
                     if (!jenis_pengujian.includes(v.jenis_pengujian)) {
                         deskripsi += ` ${v.jenis_pengujian}`
-                        deskripsi.push(v.jenis_pengujian)
+                        jenis_pengujian.push(v.jenis_pengujian)
                     }
                 })
                 return deskripsi
