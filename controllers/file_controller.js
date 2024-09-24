@@ -116,7 +116,7 @@ const invoice_controller = {
             async function deskripsi_function() {
                 let deskripsi = "Analisiss"
                 let jenis_pengujian = []
-                const order = await Order.find({ no_invoice: data_invoice.no_invoice })
+                const order = await Order.find({ no_invoice: no_invoice })
                
                 order.forEach((v, i) => {
                     if (!jenis_pengujian.includes(v.jenis_pengujian)) {
