@@ -113,12 +113,12 @@ const invoice_controller = {
 
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
-            async function deskripsi_function() {
-                const order = await Order.find({ no_invoice: data_invoice.no_invoice })
-                return `Analisis ${order[0].jenis_pengujian}`
-            }
+    
+            const order = await Order.find({ no_invoice: data_invoice.no_invoice })
+               
+            
             const dateString = data_invoice?.s8_date?.split(' ')
-            const deskripsi = await deskripsi_function()
+            const deskripsi =  `Analisis ${order[0].jenis_pengujian}.`
             if (deskripsi) {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
 
