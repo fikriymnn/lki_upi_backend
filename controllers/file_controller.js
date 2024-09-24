@@ -114,33 +114,19 @@ const invoice_controller = {
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
             async function deskripsi_function() {
-                let deskripsi = "Analisis"
-                let jenis_pengujian = []
-                
-
-                // order.forEach((v, i) => {
-                //     if (!jenis_pengujian.includes(v.jenis_pengujian)) {
-                //         deskripsi += ` ${v.jenis_pengujian}`
-
-                //         jenis_pengujian.push(v.jenis_pengujian)
-                //         console.log(deskripsi)
-                //     }
-
-                // })
-                if (order) {
-                    return 
-                }
-
+                const order = await Order.find({ no_invoice: data_invoice.no_invoice })
+                return `Analisis ${order[0].jenis_pengujian}`
             }
             const dateString = data_invoice?.s8_date?.split(' ')
             const deskripsi = await deskripsi_function()
-            const order = await Order.find({ no_invoice: data_invoice.no_invoice })
-            if (order) {
+            if (deskripsi) {
                 const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
+
+
                 const values = {
                     tanggal: data_invoice.no_invoice,
                     penerima: data_invoice.nama_lengkap,
-                    jenisjasa: `Analisis ${order[0].jenis_pengujian}`,
+                    jenisjasa: deskripsi,
                     total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                     terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
