@@ -147,9 +147,9 @@ console.log('1')
                     const doc = await handler.process(templateFile, value);
                     console.log('5')
                     const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
-                    const filePath = path.join(__dirname,`../tmp/${fileName}.docx`);
+                    const filePath = path.join(`/tmp/${fileName}.docx`);
                     fs.writeFileSync(filePath, doc);
-                    const outputPath = path.join(__dirname,`../tmp/${fileName}.pdf`);
+                    const outputPath = path.join(`/tmp/${fileName}.pdf`);
                     // const cek = await replaceTextInPDF(filePath,outputPath)
                     console.log("1")
     
