@@ -232,7 +232,7 @@ const invoice_controller = {
       const { total_harga, s5_date, s6_date, s8_date, status } = req.body;
 
       if (status == "Order Dibatalkan") {
-        await Invoice.updateOne({ _id: id }, { status: "Sembunyikan", success: true });
+        await Invoice.updateOne({ _id: id }, { status: "Order Dibatalkan", success: true });
       } else {
         await Invoice.updateOne({ _id: id }, req.body);
       }
