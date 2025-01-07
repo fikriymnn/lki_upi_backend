@@ -301,7 +301,9 @@ const order_controller = {
               obj.dana_penelitian = req.body[i].dana_penelitian;
 
               obj.uuid = req.body[i].uuid;
-              arr.push(obj);
+              setTimeout(()=>{
+                arr.push(obj);
+              },1500)
               no = 0;
             } catch (err) {
               console.log(err);
