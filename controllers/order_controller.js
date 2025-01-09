@@ -266,7 +266,7 @@ const order_controller = {
                 });
               }
 
-              jp.push(req.body[i].jenis_pengujian[a]);
+              jp.push(req.body[0].jenis_pengujian[0]);
               const data = await Order.find({
                 jenis_pengujian: req.body[i].jenis_pengujian[a],
                 year: current_year,
@@ -284,7 +284,7 @@ const order_controller = {
               obj.id_user = req.user._id;
               obj.nama_lengkap = req.user.nama_lengkap;
               obj.no_invoice = invoice;
-              obj.jenis_pengujian = req.body[i].jenis_pengujian[a];
+              obj.jenis_pengujian = req.body[0].jenis_pengujian[0];
               obj.kode_pengujian = kode;
               obj.nama_sample = req.body[i].nama_sample;
               obj.jumlah_sample = req.body[i].jumlah_sample;
@@ -302,7 +302,7 @@ const order_controller = {
 
               obj.uuid = req.body[i].uuid;
               
-                arr.push(obj);
+              if(data && obj.uuid) arr.push(obj);
               
               no = 0;
             } catch (err) {
@@ -313,7 +313,7 @@ const order_controller = {
         return true;
       }
       const arry = await jenis_pengujian();
-      if (arry == true) {
+      if (arr.length > 0) {
         await Order.insertMany(arr);
         const new_invoice = new Invoice({
           no_invoice: invoice,
