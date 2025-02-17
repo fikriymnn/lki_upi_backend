@@ -167,6 +167,66 @@ const order_controller = {
           length_total: length_data.length,
           data,
         });
+      }else if (
+        status_pengujian ||
+          status_report ||
+          kode_pengujian ||
+          jenis_pengujian ||
+          id_user ||
+          from ||
+          to ||
+          month ||
+          year ||
+          no_invoice
+      ) {
+        
+        let obj = {};
+        if (status_pengujian) {
+          obj.status_pengujian = status_pengujian;
+        }
+        if (status_report) {
+          obj.status_report = status_report;
+        }
+        if (kode_pengujian) {
+          obj.kode_pengujian = kode_pengujian;
+        }
+        if (jenis_pengujian) {
+          obj.jenis_pengujian = jenis_pengujian;
+        }
+        if (id_user) {
+          obj.id_user = id_user;
+        }
+        if (from && to) {
+          obj.date = { $lt: to, $gt: from };
+        }
+        if (year) {
+          obj.year = year;
+        }
+        if (month) {
+          obj.month = month;
+        }
+        if (no_invoice) {
+          obj.no_invoice = no_invoice;
+        }
+
+        const data = await Order.aggregate([
+          { $match: obj },
+          { $sort: { _id: -1 } },
+          {
+            $lookup: {
+              foreignField: "_id",
+              localField: "id_user",
+              from: "users",
+              as: "id_user",
+            },
+          },
+        ])
+        const length_data = await Order.aggregate([{ $match: obj }]);
+        res.status(200).json({
+          success: true,
+          length_total: length_data.length,
+          data,
+        });
       } else if (skip && limit) {
         const data = await Order.aggregate([
           { $sort: { _id: -1 } },

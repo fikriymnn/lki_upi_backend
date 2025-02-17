@@ -174,6 +174,66 @@ const invoice_controller = {
           length_total: length_data.length,
           data,
         });
+      } else if (status ||
+          no_invoice ||
+          id_user ||
+          from ||
+          to ||
+          month ||
+          year ||
+          success ||
+          jenis_pengujian
+      ) {
+        let obj = {};
+        if (status) {
+          if(status instanceof Array){
+            obj.status = {$in:status};
+          }else{
+            obj.status = status;
+          }
+
+        }
+        if (id_user) {
+          obj.id_user = new mongoose.Types.ObjectId(id_user);
+        }
+        if (no_invoice) {
+          obj.no_invoice = no_invoice;
+        }
+        if (from && to) {
+          obj.date = { $lt: to, $gt: from };
+        }
+        if (year) {
+          obj.year = year;
+        }
+        if (month) {
+          obj.month = month;
+        }
+        if (success) {
+          obj.success = success == "true" ? true : false;
+        }
+        if (jenis_pengujian) {
+          obj.jenis_pengujian = jenis_pengujian;
+        }
+
+        const data = await Invoice.aggregate([
+          { $match: obj },
+          {
+            $lookup: {
+              foreignField: "_id",
+              localField: "id_user",
+              from: "users",
+              as: "id_user",
+            },
+          },
+          { $sort: { _id: -1 } },
+        ])
+
+        const length_data = await Invoice.aggregate([{ $match: obj }]);
+        res.status(200).json({
+          success: true,
+          length_total: length_data.length,
+          data,
+        });
       } else if (skip && limit) {
         const data = await Invoice.aggregate([
           {
@@ -262,7 +322,6 @@ const invoice_controller = {
         if (status == "Selesai" && s8_date) {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            {  admin_date: s8_date }
           );
         } else if (status == "Selesai") {
           await Order.updateOne(
@@ -285,8 +344,7 @@ const invoice_controller = {
 
         if (status == "Sembunyikan") {
           await Order.updateOne(
-            { no_invoice: data?.no_invoice },
-            
+            { no_invoice: data?.no_invoice },      
             { status_pengujian: "-", status_report: "-" },
           );
         }

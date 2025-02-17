@@ -1,5 +1,5 @@
 require("dotenv").config({ path: "config.env" });
-
+const path = require("path")
 const express = require('express')
 const body_parser = require('body-parser')
 const cookie_parser = require('cookie-parser')
@@ -26,6 +26,7 @@ async function start(){
     app.use(cookie_parser())
     
     app.use("/api",require('./routes/router'))
+    app.use('/file', express.static(path.join(__dirname, 'file')));
     app.use("/",(req,res)=>{
         res.send("success")
     })
