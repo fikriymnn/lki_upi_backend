@@ -80,22 +80,13 @@ const invoice_controller = {
           obj.jenis_pengujian = jenis_pengujian;
         }
 
-        const dataUser = await user_model.findOne({ nama_lengkap: { $regex: nama_lengkap, $options: 'i' } }
-        )
 
-        if (dataUser) {
-          obj.id_user = dataUser._id
+        if(nama_lengkap){
+          obj.nama_lengkap = { $regex: nama_lengkap, $options: 'i' };
+        }
+
           const data = await Invoice.aggregate([
-
             { $match: obj, },
-            {
-              $lookup: {
-                foreignField: "_id",
-                localField: "id_user",
-                from: "users",
-                as: "id_user",
-              },
-            },
             { $sort: { _id: -1 } },
           ])
             .skip(s)
@@ -107,7 +98,6 @@ const invoice_controller = {
             length_total: length_data.length,
             data,
           });
-        }
       } else if (
         skip &&
         limit &&
