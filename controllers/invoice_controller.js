@@ -285,12 +285,14 @@ const invoice_controller = {
         await Invoice.updateOne({ _id: id }, { status: "Order Dibatalkan", success: true });
       } else {
         if(harga_satuan.length > 0){
+          console.log(harga_satuan);
           let jumlahHarga = 0;
           harga_satuan.forEach((v) => {
             jumlahHarga += v.hargaSatuan * v.jumlah;
           })
           await Invoice.updateOne({ _id: id }, {total_harga : jumlahHarga,...req.body})
         }else{
+          console.log("tidak ada harga satuan");
         await Invoice.updateOne({ _id: id }, req.body);
         }
       }
