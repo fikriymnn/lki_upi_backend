@@ -117,75 +117,78 @@ const invoice_controller = {
 
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
-            let jenis_jasa = ""
-            let total_harga = 0
-            data_invoice.harga_satuan.forEach((v, i) => {
-                jenis_jasa+= `${v.jumlah} ${v.keterangan}, `
-                total_harga += v.hargaSatuan * v.jumlah
-            })
+            let jenis_jasa = [];
+            let total_harga = 0;
+
+            data_invoice.harga_satuan.forEach((v) => {
+                jenis_jasa.push(`${v.jumlah} ${v.keterangan}`);
+                total_harga += v.hargaSatuan * v.jumlah;
+            });
+
+           
             // async function deskripsi_function() {
             //     let deskripsi = "Analisiss"
             //     let jenis_pengujian = []
             //     const order = await Order.find({ no_invoice: no_invoice })
-               
+
             //     order.forEach((v, i) => {
             //         if (!jenis_pengujian.includes(v.jenis_pengujian)) {
             //             deskripsi += ` ${v.jenis_pengujian}`
-                        
+
             //             jenis_pengujian.push(v.jenis_pengujian)
             //             console.log(deskripsi)
             //         }
-                    
+
             //     })
             //     return deskripsi
             // }
             const dateString = data_invoice?.s8_date?.split(' ')
-                const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
-                const handler = new TemplateHandler();
-                let value = {
-                    tanggal: data_invoice.no_invoice,
-                    penerima: data_invoice.nama_lengkap,
-                    // jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
-                    jenis_jasa: jenis_jasa,
-                    total: (total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
-                    tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                    terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
-                }
-                console.log(value)
-                console.log('4')
-                    const doc = await handler.process(templateFile, value);
-                    console.log('5')
-                    const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
-                    const filePath = path.join(`/tmp/${fileName}.docx`);
-                    fs.writeFileSync(filePath, doc);
-                    const outputPath = path.join(`/tmp/${fileName}.pdf`);
-                    // const cek = await replaceTextInPDF(filePath,outputPath)
-                    console.log("1")
-    
-                    await convertapi.convert('pdf', {
-                        File: filePath
-                    }, 'docx').then(function (result) {
-                        result.saveFiles(outputPath);
-                        console.log('Penggantian teks selesai. File hasil disimpan di:', outputPath);
-                        setTimeout(() => {
-                            res.download(outputPath, `${fileName}.pdf`, (err) => {
-                                if (err) {
-                                    console.error({ err });
-                                    res.status(500).send('Internal server error');
-                                    fs.unlinkSync(`${outputPath}`)
-                                    fs.unlinkSync(`${filePath}`)
-                                }
-                                fs.unlinkSync(`${outputPath}`)
-                                fs.unlinkSync(`${filePath}`)
-    
-    
-                            });
-                        }, 1500)
-    
+            const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
+            const handler = new TemplateHandler();
+            let value = {
+                tanggal: data_invoice.no_invoice,
+                penerima: data_invoice.nama_lengkap,
+                // jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
+                jenis_jasa: jenis_jasa.join(', '),
+                total: (total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
+                tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
+                terbilang: `${angkaketext(total_harga)} Rupiah`
+            }
+            console.log(value)
+            console.log('4')
+            const doc = await handler.process(templateFile, value);
+            console.log('5')
+            const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
+            const filePath = path.join(`/tmp/${fileName}.docx`);
+            fs.writeFileSync(filePath, doc);
+            const outputPath = path.join(`/tmp/${fileName}.pdf`);
+            // const cek = await replaceTextInPDF(filePath,outputPath)
+            console.log("1")
+
+            await convertapi.convert('pdf', {
+                File: filePath
+            }, 'docx').then(function (result) {
+                result.saveFiles(outputPath);
+                console.log('Penggantian teks selesai. File hasil disimpan di:', outputPath);
+                setTimeout(() => {
+                    res.download(outputPath, `${fileName}.pdf`, (err) => {
+                        if (err) {
+                            console.error({ err });
+                            res.status(500).send('Internal server error');
+                            fs.unlinkSync(`${outputPath}`)
+                            fs.unlinkSync(`${filePath}`)
+                        }
+                        fs.unlinkSync(`${outputPath}`)
+                        fs.unlinkSync(`${filePath}`)
+
+
                     });
-                  
-                
-            
+                }, 1500)
+
+            });
+
+
+
         } catch (err) {
             res.status(500).json({
                 success: false,
