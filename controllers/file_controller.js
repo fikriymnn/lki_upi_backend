@@ -118,8 +118,10 @@ const invoice_controller = {
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
 
             let jenis_jasa = ""
+            let total_harga = 0
             data_invoice.harga_satuan.forEach((v, i) => {
                 jenis_jasa+= `${v.jumlah} ${v.keterangan}, `
+                total_harga += v.hargaSatuan * v.jumlah
             })
             // async function deskripsi_function() {
             //     let deskripsi = "Analisiss"
@@ -145,7 +147,7 @@ const invoice_controller = {
                     penerima: data_invoice.nama_lengkap,
                     // jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
                     jenis_jasa: jenis_jasa,
-                    total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
+                    total: (total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                     tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                     terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
                 }
