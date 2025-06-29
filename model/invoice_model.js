@@ -37,6 +37,12 @@ const invoice_schema = new mongoose.Schema({
     total_harga: {
         type: Number
     },
+    harga_satuan: {
+        type: Array,
+        default: [
+            { keterangan: "", jumlah: "", hargaSatuan: "" }
+        ]
+    },
     estimasi_date: {
         type: String
     },
