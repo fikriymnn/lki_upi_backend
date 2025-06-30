@@ -154,9 +154,9 @@ const invoice_controller = {
                 penerima: data_invoice.nama_lengkap,
                 jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
                 // jenis_jasa: jenis_jasa,
-                total: (total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
+                total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                 tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                terbilang: `${angkaketext(total_harga)} Rupiah`
+                terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
             }
             console.log(value)
             console.log('4')
