@@ -24,6 +24,7 @@ const invoice_controller = {
                 let data_pesan = []
                 invoice.harga_satuan.forEach((v, i) => {
                     let obj = { jumlah: 0 }
+                    obj.no = i + 1
                     obj.deskripsi = v.keterangan
                     obj.jumlah = v.jumlah
                     obj.jb = (v.hargaSatuan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
@@ -119,13 +120,16 @@ const invoice_controller = {
 
             let jenis_jasa = [];
             let total_harga = 0;
-
+            // const deskripsi_function = ()=>{
+                
+            // }
             data_invoice.harga_satuan.forEach((v) => {
                 jenis_jasa.push(`${v.jumlah} ${v.keterangan}`);
                 total_harga += v.hargaSatuan * v.jumlah;
             });
 
           jenis_jasa = jenis_jasa.join(', ')
+          console.log(jenis_jasa)
             // async function deskripsi_function() {
             //     let deskripsi = "Analisiss"
             //     let jenis_pengujian = []
@@ -148,8 +152,8 @@ const invoice_controller = {
             let value = {
                 tanggal: data_invoice.no_invoice,
                 penerima: data_invoice.nama_lengkap,
-                // jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
-                jenis_jasa: jenis_jasa,
+                jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
+                // jenis_jasa: jenis_jasa,
                 total: (total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                 tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                 terbilang: `${angkaketext(total_harga)} Rupiah`
