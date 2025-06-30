@@ -52,9 +52,9 @@ const invoice_controller = {
         const s = parseInt(skip);
         const l = parseInt(limit);
         if (status) {
-          if(status instanceof Array){
-            obj.status = {$in:status};
-          }else{
+          if (status instanceof Array) {
+            obj.status = { $in: status };
+          } else {
             obj.status = status;
           }
         }
@@ -81,23 +81,23 @@ const invoice_controller = {
         }
 
 
-        if(nama_lengkap){
+        if (nama_lengkap) {
           obj.nama_lengkap = { $regex: nama_lengkap, $options: 'i' };
         }
 
-          const data = await Invoice.aggregate([
-            { $match: obj, },
-            { $sort: { _id: -1 } },
-          ])
-            .skip(s)
-            .limit(l);
+        const data = await Invoice.aggregate([
+          { $match: obj, },
+          { $sort: { _id: -1 } },
+        ])
+          .skip(s)
+          .limit(l);
 
-          const length_data = await Invoice.aggregate([{ $match: obj }]);
-          res.status(200).json({
-            success: true,
-            length_total: length_data.length,
-            data,
-          });
+        const length_data = await Invoice.aggregate([{ $match: obj }]);
+        res.status(200).json({
+          success: true,
+          length_total: length_data.length,
+          data,
+        });
       } else if (
         skip &&
         limit &&
@@ -115,9 +115,9 @@ const invoice_controller = {
         const s = parseInt(skip);
         const l = parseInt(limit);
         if (status) {
-          if(status instanceof Array){
-            obj.status = {$in:status};
-          }else{
+          if (status instanceof Array) {
+            obj.status = { $in: status };
+          } else {
             obj.status = status;
           }
 
@@ -165,20 +165,20 @@ const invoice_controller = {
           data,
         });
       } else if (status ||
-          no_invoice ||
-          id_user ||
-          from ||
-          to ||
-          month ||
-          year ||
-          success ||
-          jenis_pengujian
+        no_invoice ||
+        id_user ||
+        from ||
+        to ||
+        month ||
+        year ||
+        success ||
+        jenis_pengujian
       ) {
         let obj = {};
         if (status) {
-          if(status instanceof Array){
-            obj.status = {$in:status};
-          }else{
+          if (status instanceof Array) {
+            obj.status = { $in: status };
+          } else {
             obj.status = status;
           }
 
@@ -279,24 +279,37 @@ const invoice_controller = {
   update_invoice: async (req, res) => {
     try {
       const { id } = req.params;
-      const { total_harga, s5_date, s6_date, s8_date, status,harga_satuan } = req.body;
+      const { total_harga, s5_date, s6_date, s8_date, status, harga_satuan, estimasi_date, catatan } = req.body;
 
       if (status == "Order Dibatalkan") {
         await Invoice.updateOne({ _id: id }, { status: "Order Dibatalkan", success: true });
       } else {
-        if(req.body.harga_satuan.length > 0){
+        if (req.body.harga_satuan.length > 0) {
           let jumlahHarga = 0;
           harga_satuan.forEach((v) => {
             jumlahHarga += parseInt(v.hargaSatuan) * parseInt(v.jumlah);
           })
-          await Invoice.updateOne({ _id: id }, {total_harga:jumlahHarga,...req.body})
-        }else{
-        await Invoice.updateOne({ _id: id }, req.body);
+          console.log(req.body)
+          console.log(3)
+          if(jumlahHarga>0){
+          await Invoice.updateOne({ _id: id }, {
+            total_harga: jumlahHarga, status,
+            estimasi_date,
+            catatan, harga_satuan
+          })
+          }else{
+             await Invoice.updateOne({ _id: id }, req.body)
+          }
+
+        } else {
+          console.log(2)
+          await Invoice.updateOne({ _id: id }, req.body);
         }
       }
-
+console.log(4)
       const data = await Invoice.findOne({ _id: id });
       if (data) {
+        console.log(1)
         if (total_harga) {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
@@ -310,10 +323,10 @@ const invoice_controller = {
           );
         }
 
-        if (status == "menunggu form dikonfirmasi"||status=="Sample Dikerjakan Operator"|| status=="Menunggu Verifikasi") {
+        if (status == "menunggu form dikonfirmasi" || status == "Sample Dikerjakan Operator" || status == "Menunggu Verifikasi") {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { status_pengujian: "-", status_report: "-"}
+            { status_pengujian: "-", status_report: "-" }
           );
         }
 
@@ -321,7 +334,7 @@ const invoice_controller = {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
             { status_pengujian: "success", status_report: "success" },
-            { admin_date: s8_date}
+            { admin_date: s8_date }
           );
         } else if (status == "Selesai") {
           await Order.updateOne(
@@ -331,7 +344,7 @@ const invoice_controller = {
         } else if (s8_date) {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
-            { admin_date: s8_date}
+            { admin_date: s8_date }
           );
         }
 
@@ -344,7 +357,7 @@ const invoice_controller = {
 
         if (status == "Sembunyikan") {
           await Order.updateOne(
-            { no_invoice: data?.no_invoice },      
+            { no_invoice: data?.no_invoice },
             { status_pengujian: "-", status_report: "-" },
           );
         }
