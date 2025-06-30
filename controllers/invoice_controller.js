@@ -284,15 +284,15 @@ const invoice_controller = {
       if (status == "Order Dibatalkan") {
         await Invoice.updateOne({ _id: id }, { status: "Order Dibatalkan", success: true });
       } else {
-        if(harga_satuan.length > 0){
+        if(req.body.harga_satuan.length > 0){
           let jumlahHarga = 0;
           harga_satuan.forEach((v) => {
-            jumlahHarga += v.hargaSatuan * v.jumlah;
+            jumlahHarga += parseInt(v.hargaSatuan) * parseInt(v.jumlah);
           })
-          await Invoice.updateOne({ _id: id }, {total_harga : jumlahHarga,...req.body})
-        }
+          await Invoice.updateOne({ _id: id }, {total_harga:jumlahHarga,...req.body})
+        }else{
         await Invoice.updateOne({ _id: id }, req.body);
-
+        }
       }
 
       const data = await Invoice.findOne({ _id: id });

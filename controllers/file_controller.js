@@ -125,7 +125,7 @@ const invoice_controller = {
                 total_harga += v.hargaSatuan * v.jumlah;
             });
 
-           
+          jenis_jasa = jenis_jasa.join(', ')
             // async function deskripsi_function() {
             //     let deskripsi = "Analisiss"
             //     let jenis_pengujian = []
@@ -149,7 +149,7 @@ const invoice_controller = {
                 tanggal: data_invoice.no_invoice,
                 penerima: data_invoice.nama_lengkap,
                 // jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
-                jenis_jasa: jenis_jasa.join(', '),
+                jenis_jasa: jenis_jasa,
                 total: (total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                 tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                 terbilang: `${angkaketext(total_harga)} Rupiah`
