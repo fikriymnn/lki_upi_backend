@@ -29,6 +29,7 @@ const invoice_controller = {
                     obj.jumlah = v.jumlah
                     obj.jb = (v.hargaSatuan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "");
                     total_harga += v.hargaSatuan * v.jumlah
+                    obj.jb = (obj.jb.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, "")
                     // obj.deskripsi = `Analisis ${v.jenis_pengujian}`
                     // list_jp.forEach((v2) => {
                     //     if (v2 == v.jenis_pengujian) {
