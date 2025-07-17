@@ -153,23 +153,30 @@ console.log("as")
             const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
             console.log("3")
             const handler = new TemplateHandler();
+            console.log(typeof data_invoice.total_harga)
+            console.log(data_invoice.total_harga)
+            console.log("cek")
+            console.log((data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""))
+            console.log(`Analisis ${data_invoice.jenis_pengujian}`)
+            console.log(data_invoice.no_invoice)
+            console.log(data_invoice.nama_lengkap)
             let value = {
                 tanggal: data_invoice.no_invoice,
                 penerima: data_invoice.nama_lengkap,
-                jenisjasa: `Analisis ${jenis_jasa||data_invoice.jenis_pengujian}`,
+                jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
                 // jenis_jasa: jenis_jasa,
                 total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                 tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                terbilang: `${angkaketext(parseInt(data_invoice.total_harga))} Rupiah`
+                terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
             }
-            console.log(value)
+            
             console.log('4')
             const doc = await handler.process(templateFile, value);
             console.log('5')
             const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
-            const filePath = path.join(`/tmp/${fileName}.docx`);
+            const filePath = path.join(__dirname,+`/tmp/${fileName}.docx`);
             fs.writeFileSync(filePath, doc);
-            const outputPath = path.join(`/tmp/${fileName}.pdf`);
+            const outputPath = path.join(__dirname,+`/tmp/${fileName}.pdf`);
             // const cek = await replaceTextInPDF(filePath,outputPath)
             console.log("1")
 
