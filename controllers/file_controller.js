@@ -150,16 +150,13 @@ console.log("as")
             // }
             console.log("2")
             const dateString = data_invoice?.s8_date?.split(' ')
+            console.log(s8_date)
+            console.log(dateString)
             const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
             console.log("3")
             const handler = new TemplateHandler();
             console.log(typeof data_invoice.total_harga)
             console.log(data_invoice.total_harga)
-            console.log("cek")
-            console.log((data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""))
-            console.log(`Analisis ${data_invoice.jenis_pengujian}`)
-            console.log(data_invoice.no_invoice)
-            console.log(data_invoice.nama_lengkap)
             let value = {
                 tanggal: data_invoice.no_invoice,
                 penerima: data_invoice.nama_lengkap,
@@ -174,9 +171,9 @@ console.log("as")
             const doc = await handler.process(templateFile, value);
             console.log('5')
             const fileName = `kuitansi_${data_invoice?.id_user?.nama_lengkap?.replace(" ", "_")}_${dateString[1]}_${dateString[2]}_${dateString[3]}`
-            const filePath = path.join(__dirname,+`/tmp/${fileName}.docx`);
+            const filePath = path.join(`/tmp/${fileName}.docx`);
             fs.writeFileSync(filePath, doc);
-            const outputPath = path.join(__dirname,+`/tmp/${fileName}.pdf`);
+            const outputPath = path.join(`/tmp/${fileName}.pdf`);
             // const cek = await replaceTextInPDF(filePath,outputPath)
             console.log("1")
 

@@ -300,9 +300,7 @@ const invoice_controller = {
              await Invoice.updateOne({ _id: id }, req.body)
           }
 
-        } else {
-          await Invoice.updateOne({ _id: id }, req.body);
-        }
+        } 
       }
       const data = await Invoice.findOne({ _id: id });
       if (data) {
@@ -377,6 +375,8 @@ const invoice_controller = {
           );
           console.log(s6_date);
         }
+
+        await Invoice.updateOne({ _id: id }, req.body);
 
 
       }
