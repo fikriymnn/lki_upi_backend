@@ -124,6 +124,8 @@ console.log("as")
                 
             // }
             console.log("1")
+            console.log(data_invoice)
+      console.log(data_invoice.s8_date)
             data_invoice.harga_satuan.forEach((v) => {
                 jenis_jasa.push(`${v.jumlah} ${v.keterangan}`);
                 total_harga += v.hargaSatuan * v.jumlah;
@@ -149,8 +151,11 @@ console.log("as")
             //     return deskripsi
             // }
             console.log("2")
+            console.log(data_invoice?.s8_date?.split(' '))
             const dateString = data_invoice?.s8_date?.split(' ')
-            console.log(s8_date)
+            
+            console.log(dateString)
+            console.log("1")
             console.log(dateString)
             const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
             console.log("3")
@@ -166,6 +171,7 @@ console.log("as")
                 tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
                 terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
             }
+            console.log(value)
             
             console.log('4')
             const doc = await handler.process(templateFile, value);
