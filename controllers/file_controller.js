@@ -117,12 +117,13 @@ const invoice_controller = {
             const { no_invoice } = req.query
 
             const data_invoice = await Invoice.findOne({ no_invoice: no_invoice }).populate('id_user')
-
+console.log("as")
             let jenis_jasa = [];
             let total_harga = 0;
             // const deskripsi_function = ()=>{
                 
             // }
+            console.log("1")
             data_invoice.harga_satuan.forEach((v) => {
                 jenis_jasa.push(`${v.jumlah} ${v.keterangan}`);
                 total_harga += v.hargaSatuan * v.jumlah;
@@ -130,6 +131,7 @@ const invoice_controller = {
 
           jenis_jasa = jenis_jasa.join(', ')
           console.log(jenis_jasa)
+          console.log("as")
             // async function deskripsi_function() {
             //     let deskripsi = "Analisiss"
             //     let jenis_pengujian = []
@@ -146,17 +148,19 @@ const invoice_controller = {
             //     })
             //     return deskripsi
             // }
+            console.log("2")
             const dateString = data_invoice?.s8_date?.split(' ')
             const templateFile = fs.readFileSync(path.join(__dirname, '../templates/bon.docx'));
+            console.log("3")
             const handler = new TemplateHandler();
             let value = {
                 tanggal: data_invoice.no_invoice,
                 penerima: data_invoice.nama_lengkap,
-                jenisjasa: `Analisis ${data_invoice.jenis_pengujian}`,
+                jenisjasa: `Analisis ${jenis_jasa||data_invoice.jenis_pengujian}`,
                 // jenis_jasa: jenis_jasa,
                 total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                 tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
+                terbilang: `${angkaketext(parseInt(data_invoice.total_harga))} Rupiah`
             }
             console.log(value)
             console.log('4')
