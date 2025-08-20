@@ -91,18 +91,6 @@ const invoice_controller = {
 
                 });
 
-                // return res.download(outputPath, `${fileName}.pdf`, (err) => {
-                //     if (err) {
-                //          console.error({ err });
-                //          res.status(500).send('Internal server error');
-                //          fs.unlinkSync(`${filePath}`);
-                //          fs.unlinkSync(`${outputPath}`);          
-                //         }
-                //          fs.unlinkSync(`${filePath}`);
-                //          fs.unlinkSync(`${outputPath}`);    
-
-                //      })
-
             }
         } catch (err) {
             console.log(err)
