@@ -141,7 +141,7 @@ console.log("as")
             // }
             console.log("2")
             console.log(data_invoice?.s8_date?.split(' '))
-            const dateString = data_invoice?.s8_date?.split(' ')
+            const dateString = data_invoice?.s8_date?.split(' ') || data_invoice?.s7_date?.split(' ')
             
             console.log(dateString)
             console.log("1")
