@@ -39,6 +39,16 @@ const peminjam_schema = new mongoose.Schema(
       required: true,
       lowercase: true,
       trim: true
+    },
+    jumlah_transaksi: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    jumlah_terlambat:{
+      type: Number,
+      default: 0,
+      min: 0
     }
   },
   {
