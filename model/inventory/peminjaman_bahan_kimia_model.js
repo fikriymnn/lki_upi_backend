@@ -2,28 +2,37 @@ const mongoose = require('mongoose')
 
 const peminjaman_bahan_schema = new mongoose.Schema(
   {
-    // snapshot data peminjam
+    // Data Peminjam
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Peminjam',
+      default: null
+    },
     user_name: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     user_nik: {
       type: String,
+      required: true
     },
     user_status: {
       type: String,
       required: true,
-      enum: ['Mahasiswa', 'Dosen', 'Staff', 'Umum']
+      enum: ['Mahasiswa', 'Dosen', 'Staff', 'Peneliti', 'Umum']
     },
     user_institusi: {
       type: String,
       required: true
     },
     user_fakultas: {
-      type: String
+      type: String,
+      default: ''
     },
     user_jurusan: {
-      type: String
+      type: String,
+      default: ''
     },
     user_phone: {
       type: String,
@@ -31,31 +40,36 @@ const peminjaman_bahan_schema = new mongoose.Schema(
     },
     user_email: {
       type: String,
-      required: true,
-      lowercase: true,
-      trim: true
+    },
+    user_alamat: {
+      type: String,
+      default: ''
     },
 
-    // detail bahan yang dipinjam (embedded)
+    // Bahan yang dipinjam
     items: [
       {
         bahan_id: {
-          type: Number
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'BahanKimia',
+          required: true
         },
         nama_bahan: {
           type: String,
           required: true
         },
         rumus_kimia: {
-          type: String
+          type: String,
+          default: ''
         },
         jumlah_pinjam: {
           type: Number,
           required: true,
-          min: 0
+          min: 1
         },
         jumlah_kembali: {
           type: Number,
+          default: 0,
           min: 0
         },
         satuan: {
@@ -74,21 +88,25 @@ const peminjaman_bahan_schema = new mongoose.Schema(
       required: true
     },
     tanggal_dikembalikan: {
-      type: Date
-    },
-
-    status: {
-      type: String,
-      required: true,
-      enum: ['Dipinjam', 'Dikembalikan', 'Terlambat']
+      type: Date,
+      default: null
     },
 
     keperluan: {
-      type: String
+      type: String,
+      required: true
+    },
+
+    // Hanya 2 status: Dipinjam atau Dikembalikan
+    status: {
+      type: String,
+      enum: ['Dipinjam', 'Dikembalikan'],
+      default: 'Dipinjam'
     },
 
     catatan_pengembalian: {
-      type: String
+      type: String,
+      default: ''
     }
   },
   {

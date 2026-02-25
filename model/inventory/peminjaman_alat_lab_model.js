@@ -74,7 +74,7 @@ const peminjaman_alat_schema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ['Dipinjam', 'Dikembalikan', 'Terlambat']
+      enum: ['Dipinjam', 'Dikembalikan', 'Terlambat','Sebagian Dikembalikan'],
     },
 
     keperluan: {

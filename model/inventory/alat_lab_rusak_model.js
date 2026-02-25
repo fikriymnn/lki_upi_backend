@@ -3,6 +3,11 @@ const mongoose = require('mongoose')
 const alat_lab_rusak_schema = new mongoose.Schema(
   {
     // ===== snapshot data alat lab =====
+    id_peminjaman: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PeminjamanAlatLab',
+      required: true
+    },
     nama_alat: {
       type: String,
       required: true,

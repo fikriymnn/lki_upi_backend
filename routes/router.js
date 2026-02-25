@@ -12,6 +12,8 @@ router.use("/",require("./inventory/penyimpanan_router"))
 router.use("/",require("./inventory/peminjam_router"))
 router.use("/",require("./inventory/alat_lab_router"))
 router.use("/",require("./inventory/bahan_kimia_router"))
+router.use("/",require("./inventory/peminjaman_alat_lab_router"))
+router.use("/",require("./inventory/peminjaman_bahan_kimia_router"))
 router.use("/update_direct",async (req,res)=>{
     try {
         await invoice_model.updateMany({year:"2024",status:"Selesai"},{$set:{status:"Sembunyikan"}})
