@@ -33,15 +33,14 @@ const user_controller = {
 
          const user = await User.findOne({ email: body.email })
          const access_token = generate_access_token({ _id: user._id, email: body.email, role: user.role, jenis_institusi: body.jenis_institusi, nama_institusi: body.nama_institusi, no_telp: body.no_telp, no_whatsapp: user.no_whatsapp, nama_lengkap: body.nama_lengkap })
-         const millisecondsInDay = 1000 * 60 * 60 * 24;
-         const expiresInMilliseconds = millisecondsInDay * 999;
+
 
          res.cookie("access_token", access_token, {
             httpOnly: true,
             path: "/",
             sameSite: 'None',
             secure: true,
-            expires: new Date(Date.now() + expiresInMilliseconds)
+            maxAge: 24 * 60 * 60 * 1000
          })
 
 
@@ -66,13 +65,13 @@ const user_controller = {
    login: async (req, res) => {
       try {
          console.log(0)
-         if (req.cookies.access_token) {
-            return res.status(200).json({
-               success: true,
-               status: 200,
-               message: "Login successfully"
-            })
-         }
+         // if (req.cookies.access_token) {
+         //    return res.status(200).json({
+         //       success: true,
+         //       status: 200,
+         //       message: "Login successfully"
+         //    })
+         // }
          const { password, email } = req.body
          if (!password && !email) {
             return res.status(200).json({
@@ -105,15 +104,14 @@ const user_controller = {
             _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap, no_whatsapp: user.no_whatsapp
          })
 
-         const millisecondsInDay = 1000 * 60 * 60 * 24;
-         const expiresInMilliseconds = millisecondsInDay * 999;
+
 
          res.cookie("access_token", access_token, {
             httpOnly: true,
             path: "/",
             sameSite: 'None',
             secure: true,
-            expires: new Date(Date.now() + expiresInMilliseconds)
+            maxAge: 24 * 60 * 60 * 1000
          })
 
          return res.status(200).json({
@@ -207,15 +205,14 @@ const user_controller = {
          const access_token = generate_access_token({
             _id: user._id, email: user.email, role: user.role, jenis_institusi: user.jenis_institusi, nama_institusi: user.nama_institusi, no_telp: user.no_telp, nama_lengkap: user.nama_lengkap, no_whatsapp: user.no_whatsapp
          })
-         const millisecondsInDay = 1000 * 60 * 60 * 24;
-         const expiresInMilliseconds = millisecondsInDay * 999;
+
 
          res.cookie("access_token", access_token, {
             httpOnly: true,
             path: "/",
             sameSite: 'None',
             secure: true,
-            expires: new Date(Date.now() + expiresInMilliseconds)
+            maxAge: 24 * 60 * 60 * 1000
          })
          return res.status(200).json({
             success: true,
@@ -273,7 +270,7 @@ const user_controller = {
                path: "/",
                sameSite: 'None',
                secure: true,
-               expires: new Date(Date.now() + expiresInMilliseconds)
+               maxAge: 24 * 60 * 60 * 1000
             })
             return res.status(200).json({
                success: true,
