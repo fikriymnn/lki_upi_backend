@@ -2,41 +2,11 @@ const mongoose = require('mongoose')
 
 const peminjaman_alat_schema = new mongoose.Schema(
   {
-    // snapshot data peminjam
-    user_name: {
-      type: String,
+    id_peminjam: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Peminjam',
       required: true
     },
-    user_nik: {
-      type: String,
-    },
-    user_status: {
-      type: String,
-      required: true,
-      enum: ['Mahasiswa', 'Dosen', 'Staff', 'Umum']
-    },
-    user_institusi: {
-      type: String,
-      required: true
-    },
-    user_fakultas: {
-      type: String
-    },
-    user_jurusan: {
-      type: String
-    },
-    user_phone: {
-      type: String,
-      required: true
-    },
-    user_email: {
-      type: String,
-      required: true,
-      lowercase: true,
-      trim: true
-    },
-
-    // detail alat yang dipinjam (embedded)
     items: [
       {
         alat_id: {
@@ -74,7 +44,7 @@ const peminjaman_alat_schema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ['Dipinjam', 'Dikembalikan', 'Terlambat','Sebagian Dikembalikan'],
+      enum: ['Dipinjam', 'Dikembalikan', 'Terlambat', 'Sebagian Dikembalikan'],
     },
 
     keperluan: {

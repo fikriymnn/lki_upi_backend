@@ -10,12 +10,12 @@ const alat_lab_schema = new mongoose.Schema(
     spesifikasi: {
       type: String
     },
-    jumlah: {
+    quantity: {
       type: Number,
       required: true,
       min: 0
     },
-    merk_brand: {
+    merk: {
       type: String
     },
     suppliers: [
@@ -32,10 +32,11 @@ const alat_lab_schema = new mongoose.Schema(
         }
       }
     ],
-    penyimpanan: {
-      type: String,
+    id_penyimpanan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Penyimpanan',
       required: true
-    }
+    },
   },
   {
     timestamps: true

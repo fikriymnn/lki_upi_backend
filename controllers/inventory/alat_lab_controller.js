@@ -1,4 +1,4 @@
-const AlatLab = require('../../model/inventory/alat_lab_model')
+const AlatLab = require('../../model/inventory_system/inventaris/alat_lab_model')
 
 const alat_lab_controller = {
    get_alat_lab: async (req, res) => {

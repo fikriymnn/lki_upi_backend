@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const peminjam_schema = new mongoose.Schema(
   {
-    name: {
+    nama: {
       type: String,
       required: true,
       trim: true
@@ -36,7 +36,7 @@ const peminjam_schema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
+      // required: true,
       lowercase: true,
       trim: true
     },
