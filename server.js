@@ -6,9 +6,26 @@ const cookie_parser = require('cookie-parser')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const app = express()
-app.use(cors({credentials: true, origin: true }))
+
 const URL = process.env.DATABASE_URL
 const PORT = process.env.PORT || 5000
+
+app.use((req, res, next) => {
+    const host = req.headers.host;
+
+    // redirect www -> non-www
+    if (host === 'www.api.labkiupi.com') {
+        return res.redirect(301, 'https://api.labkiupi.com' + req.originalUrl);
+    }
+
+    // force https
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        return res.redirect(301, 'https://api.labkiupi.com' + req.originalUrl);
+    }
+
+    next();
+});
+app.use(cors({credentials: true, origin: true }))
 
 async function start(){
     try{
