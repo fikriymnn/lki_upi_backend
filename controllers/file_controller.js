@@ -157,7 +157,7 @@ console.log("as")
                 // jenis_jasa: jenis_jasa,
                 total: (data_invoice.total_harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })).replace(/\bRp\b/g, ""),
                 tgltanda: `Bandung, ${dateString[1]} ${dateString[2]} ${dateString[3]}`,
-                terbilang: `${angkaketext(data_invoice.total_harga)} Rupiah`
+                terbilang: `${angkaketext(data_invoice.total_harga)} rupiah`
             }
             console.log(value)
             

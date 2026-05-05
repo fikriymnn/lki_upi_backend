@@ -117,7 +117,7 @@ const order_controller = {
           year ||
           no_invoice)
       ) {
-        
+
         let obj = {};
         if (status_pengujian) {
           obj.status_pengujian = status_pengujian;
@@ -167,19 +167,19 @@ const order_controller = {
           length_total: length_data.length,
           data,
         });
-      }else if (
+      } else if (
         status_pengujian ||
-          status_report ||
-          kode_pengujian ||
-          jenis_pengujian ||
-          id_user ||
-          from ||
-          to ||
-          month ||
-          year ||
-          no_invoice
+        status_report ||
+        kode_pengujian ||
+        jenis_pengujian ||
+        id_user ||
+        from ||
+        to ||
+        month ||
+        year ||
+        no_invoice
       ) {
-        
+
         let obj = {};
         if (status_pengujian) {
           obj.status_pengujian = status_pengujian;
@@ -257,8 +257,8 @@ const order_controller = {
           data,
         });
       } else {
-        await Order.updateMany({"status_pengujian": "prasuccess"}, {"$set":{"status_pengujian": "success"}})
-        
+        await Order.updateMany({ "status_pengujian": "prasuccess" }, { "$set": { "status_pengujian": "success" } })
+
         const data = await Order.aggregate([
           { $sort: { _id: -1 } },
           {
@@ -334,9 +334,8 @@ const order_controller = {
               });
 
               let obj = {};
-              let kode = `${
-                req.body[i].kode_pengujian[a]
-              }-${current_month}/${current_year}/${data.length + no + 1}`;
+              let kode = `${req.body[i].kode_pengujian[a]
+                }-${current_month}/${current_year}/${data.length + no + 1}`;
               obj.date_format = `${new Date().getDate()} ${month_bahasa(
                 new Date().getMonth()
               )} ${new Date().getFullYear()}`;
@@ -359,11 +358,12 @@ const order_controller = {
               obj.nama_pembimbing = req.body[i].nama_pembimbing;
               obj.lama_pengerjaan = req.body[i].lama_pengerjaan;
               obj.dana_penelitian = req.body[i].dana_penelitian;
-
+              obj.foto_sample = req.body[i].foto_sample;
+              obj.jurnal_pendukung = req.body[i].jurnal_pendukung;
               obj.uuid = req.body[i].uuid;
-              
-              if(data && obj.uuid) arr.push(obj);
-              
+
+              if (data && obj.uuid) arr.push(obj);
+
               no = 0;
             } catch (err) {
               console.log(err);
@@ -379,7 +379,7 @@ const order_controller = {
           no_invoice: invoice,
           total_harga: 0,
           estimasi_harga: 0,
-          nama_lengkap : req.user.nama_lengkap,
+          nama_lengkap: req.user.nama_lengkap,
           id_user: req.user._id,
           status: "menunggu form dikonfirmasi",
           jenis_pengujian: req.body[0].jenis_pengujian[0],
