@@ -12,10 +12,11 @@ const PORT = process.env.PORT || 5000
 
 const corsOptions = {
   origin: [
-    'https://lki-upi.vercel.app',         // ✅ domain frontend production
-    'http://localhost:3000',               // ✅ local development
+    'https://www.lablkiupi.com',  // ✅ tambahkan ini
+    'https://lablkiupi.com',      // ✅ tanpa www juga
+    'http://localhost:3000',
   ],
-  credentials: true,                       // ✅ wajib untuk cookie
+  credentials: true,
   exposedHeaders: 'Content-Disposition',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
