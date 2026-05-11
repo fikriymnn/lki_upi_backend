@@ -10,52 +10,43 @@ const app = express()
 const URL = process.env.DATABASE_URL
 const PORT = process.env.PORT || 5000
 
-// app.use((req, res, next) => {
-//     const host = req.headers.host;
+const corsOptions = {
+  origin: [
+    'https://lki-upi.vercel.app',         // ✅ domain frontend production
+    'http://localhost:3000',               // ✅ local development
+  ],
+  credentials: true,                       // ✅ wajib untuk cookie
+  exposedHeaders: 'Content-Disposition',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}
 
-//     // redirect www -> non-www
-//     if (host === 'www.api.labkiupi.com') {
-//         return res.redirect(301, 'https://api.labkiupi.com' + req.originalUrl);
-//     }
+// ✅ Urutan benar: cookie parser → cors → body parser → routes
+app.use(cookie_parser())
+app.use(cors(corsOptions))
+app.use(body_parser.json())
+app.use(body_parser.urlencoded({ extended: true }))
 
-//     // force https
-//     if (req.headers['x-forwarded-proto'] !== 'https') {
-//         return res.redirect(301, 'https://api.labkiupi.com' + req.originalUrl);
-//     }
+async function start() {
+  try {
+    mongoose.connect(URL)
+  } catch(err) {
+    console.log(err.message)
+  }
 
-//     next();
-// });
-app.use(cors({credentials: true, origin: true }))
+  app.use("/api", require('./routes/router'))
+  app.use('/file', express.static(path.join(__dirname, 'file')))
+  app.use("/", (req, res) => {
+    res.send("success")
+  })
 
-async function start(){
-    try{
-        mongoose.connect(URL)
-    }catch(err){
-        console.log(err.message)
-    }
-    
-    const corsOptions = {
-        exposedHeaders: 'Content-Disposition',credentials: true, origin: true 
-      }
-    app.use(cors(corsOptions))
-    app.use(body_parser.json())
-    app.use(body_parser.urlencoded({extended:true}))
-    app.use(cookie_parser())
-    
-    app.use("/api",require('./routes/router'))
-    app.use('/file', express.static(path.join(__dirname, 'file')));
-    app.use("/",(req,res)=>{
-        res.send("success")
+  try {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`)
     })
-    
-    try{
-        app.listen(PORT,()=>{
-            console.log(`Server running on port ${PORT}`)
-        })
-    }catch(err){
-        console.log(err.message)
-    }
-    
+  } catch(err) {
+    console.log(err.message)
+  }
 }
 
 start()
