@@ -1,0 +1,3 @@
+- all model
+- router controller alat lab
+- router controller bahan kimia

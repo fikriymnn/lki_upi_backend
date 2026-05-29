@@ -1,31 +1,31 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
-const stockOpnameSchema = new mongoose.Schema(
+const stock_opname_schema = new mongoose.Schema(
   {
     tanggal: {
       type: Date,
       required: true
     },
-
     status: {
       type: String,
-      enum: ["DRAFT", "FINAL"],
-      default: "DRAFT"
+      enum: ['DRAFT', 'FINAL'],
+      default: 'DRAFT'
     },
-
-    dibuatOleh: {
+    dibuat_oleh: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: 'User'
     },
-
-    disesuaikanOleh: {
+    disesuaikan_oleh: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: 'User'
     },
-
-    disesuaikanPada: Date
+    disesuaikan_pada: {
+      type: Date
+    }
   },
-  { timestamps: true }
-);
+  {
+    timestamps: true
+  }
+)
 
-module.exports = mongoose.model("StockOpname", stockOpnameSchema);
+module.exports = mongoose.model('StockOpname', stock_opname_schema)

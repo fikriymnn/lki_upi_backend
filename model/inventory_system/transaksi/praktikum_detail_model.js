@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
 
-const stock_opname_item_schema = new mongoose.Schema(
+const detail_praktikum_schema = new mongoose.Schema(
   {
-    id_opname: {
+    id_praktikum: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'StockOpname',
+      ref: 'Praktikum',
       required: true
     },
     item_id: {
@@ -17,21 +17,20 @@ const stock_opname_item_schema = new mongoose.Schema(
       required: true,
       enum: ['AlatLab', 'BahanKimia']
     },
-    system_stock: {
+    jumlah_digunakan: {
       type: Number,
-      required: true
+      required: true,
+      min: 1
     },
-    physical_stock: {
+    jumlah_dikembalikan: {
       type: Number,
-      default: 0
+      default: 0,
+      min: 0
     },
-    selisih: {
+    jumlah_rusak: {
       type: Number,
-      default: 0
-    },
-    deskripsi: {
-      type: String,
-      trim: true
+      default: 0,
+      min: 0
     }
   },
   {
@@ -39,7 +38,7 @@ const stock_opname_item_schema = new mongoose.Schema(
   }
 )
 
-stock_opname_item_schema.index({ id_opname: 1 })
-stock_opname_item_schema.index({ item_id: 1 })
+detail_praktikum_schema.index({ id_praktikum: 1 })
+detail_praktikum_schema.index({ item_id: 1 })
 
-module.exports = mongoose.model('StockOpnameItem', stock_opname_item_schema)
+module.exports = mongoose.model('DetailPraktikum', detail_praktikum_schema)

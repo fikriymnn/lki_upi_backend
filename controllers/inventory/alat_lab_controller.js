@@ -1,15 +1,17 @@
-const AlatLab = require('../../model/inventory_system/inventaris/alat_lab_model')
+const AlatLab = require('../../model/inventory/alat_lab_model')
+const Penyimpanan = require('../../model/inventory/penyimpanan_model')
 
 const alat_lab_controller = {
+
+   // ======================
+   // GET ALL + GET BY ID
+   // ======================
    get_alat_lab: async (req, res) => {
       try {
          const { id } = req.params
 
-         // ======================
-         // GET BY ID
-         // ======================
          if (id) {
-            const data = await AlatLab.findOne({ _id: id })
+            const data = await AlatLab.findById(id).populate('id_penyimpanan')
             if (!data) {
                return res.status(200).json({
                   success: false,
@@ -17,45 +19,39 @@ const alat_lab_controller = {
                   message: 'Data alat laboratorium tidak ditemukan'
                })
             }
-
             return res.status(200).json({
                success: true,
                data
             })
          }
 
-         // ======================
-         // GET ALL + SEARCH + FILTER + PAGINATION
-         // ======================
          const {
             page = 1,
             limit = 10,
             search = '',
-            penyimpanan
+            id_penyimpanan
          } = req.query
 
          const current_page = parseInt(page)
          const per_page = parseInt(limit)
          const skip = (current_page - 1) * per_page
 
-         let filter = {
+         const filter = {
             $or: [
                { nama_alat: { $regex: search, $options: 'i' } },
                { spesifikasi: { $regex: search, $options: 'i' } },
-               { merk_brand: { $regex: search, $options: 'i' } },
+               { merk: { $regex: search, $options: 'i' } },
                { 'suppliers.nama_supplier': { $regex: search, $options: 'i' } }
             ]
          }
 
-         // ======================
-         // FILTER PENYIMPANAN
-         // ======================
-         if (penyimpanan) {
-            filter.penyimpanan = penyimpanan
+         if (id_penyimpanan) {
+            filter.id_penyimpanan = id_penyimpanan
          }
 
          const total_data = await AlatLab.countDocuments(filter)
          const data = await AlatLab.find(filter)
+            .populate('id_penyimpanan')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(per_page)
@@ -78,11 +74,14 @@ const alat_lab_controller = {
       }
    },
 
+   // ======================
+   // ADD
+   // ======================
    add_alat_lab: async (req, res) => {
       try {
          const body = req.body
 
-         if (!body.nama_alat || body.jumlah === undefined || !body.penyimpanan) {
+         if (!body.nama_alat || body.quantity === undefined || !body.id_penyimpanan) {
             return res.status(200).json({
                success: false,
                status: 400,
@@ -90,13 +89,22 @@ const alat_lab_controller = {
             })
          }
 
+         const penyimpanan = await Penyimpanan.findById(body.id_penyimpanan)
+         if (!penyimpanan) {
+            return res.status(200).json({
+               success: false,
+               status: 404,
+               message: 'Lokasi penyimpanan tidak ditemukan'
+            })
+         }
+
          const data = new AlatLab({
             nama_alat: body.nama_alat,
             spesifikasi: body.spesifikasi,
-            jumlah: body.jumlah,
-            merk_brand: body.merk_brand,
+            quantity: body.quantity,
+            merk: body.merk,
             suppliers: body.suppliers || [],
-            penyimpanan: body.penyimpanan
+            id_penyimpanan: body.id_penyimpanan
          })
 
          await data.save()
@@ -114,18 +122,32 @@ const alat_lab_controller = {
       }
    },
 
+   // ======================
+   // UPDATE
+   // ======================
    update_alat_lab: async (req, res) => {
       try {
          const { id } = req.params
          const body = req.body
 
-         const data = await AlatLab.findOne({ _id: id })
+         const data = await AlatLab.findById(id)
          if (!data) {
             return res.status(200).json({
                success: false,
                status: 404,
                message: 'Data alat laboratorium tidak ditemukan'
             })
+         }
+
+         if (body.id_penyimpanan) {
+            const penyimpanan = await Penyimpanan.findById(body.id_penyimpanan)
+            if (!penyimpanan) {
+               return res.status(200).json({
+                  success: false,
+                  status: 404,
+                  message: 'Lokasi penyimpanan tidak ditemukan'
+               })
+            }
          }
 
          await AlatLab.updateOne({ _id: id }, body)
@@ -142,11 +164,14 @@ const alat_lab_controller = {
       }
    },
 
+   // ======================
+   // DELETE
+   // ======================
    delete_alat_lab: async (req, res) => {
       try {
          const { id } = req.params
 
-         const data = await AlatLab.findOne({ _id: id })
+         const data = await AlatLab.findById(id)
          if (!data) {
             return res.status(200).json({
                success: false,

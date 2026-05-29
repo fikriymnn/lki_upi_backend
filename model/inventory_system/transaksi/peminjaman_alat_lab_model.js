@@ -7,31 +7,6 @@ const peminjaman_alat_schema = new mongoose.Schema(
       ref: 'Peminjam',
       required: true
     },
-    items: [
-      {
-        alat_id: {
-          type: Number
-        },
-        nama_alat: {
-          type: String,
-          required: true
-        },
-        spesifikasi: {
-          type: String
-        },
-        jumlah_pinjam: {
-          type: Number,
-          required: true,
-          min: 1
-        },
-        jumlah_kembali: {
-          type: Number,
-          default: 0,
-          min: 0
-        }
-      }
-    ],
-
     tanggal_pinjam: {
       type: Date,
       required: true
@@ -40,24 +15,31 @@ const peminjaman_alat_schema = new mongoose.Schema(
       type: Date,
       required: true
     },
-
     status: {
       type: String,
       required: true,
       enum: ['Dipinjam', 'Dikembalikan', 'Terlambat', 'Sebagian Dikembalikan'],
+      default: 'Dipinjam'
     },
-
     keperluan: {
-      type: String
+      type: String,
+      trim: true
     },
-
     catatan_pengembalian: {
-      type: String
+      type: String,
+      trim: true
+    },
+    created_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     }
   },
   {
     timestamps: true
   }
 )
+
+peminjaman_alat_schema.index({ id_peminjam: 1 })
 
 module.exports = mongoose.model('PeminjamanAlat', peminjaman_alat_schema)

@@ -1,48 +1,56 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
-const stockMovementSchema = new mongoose.Schema(
-    {
-        item: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            refPath: "itemModel"
-        },
-
-        itemModel: {
-            type: String,
-            required: true,
-            enum: ["AlatLab", "BahanKimia"]
-        },
-
-        type: {
-            type: String,
-            required: true,
-            enum: ["IN", "OUT", "ADJUSTMENT"]
-        },
-
-        quantity: {
-            type: Number,
-            required: true,
-            min: 0
-        },
-        previousStock: {
-            type: Number,
-            required: true
-        },
-
-        newStock: {
-            type: Number,
-            required: true
-        },
-        note: String,
-        createdBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        }
+const stock_movement_schema = new mongoose.Schema(
+  {
+    item_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: 'item_model'
     },
-    { timestamps: true }
-);
+    item_model: {
+      type: String,
+      required: true,
+      enum: ['AlatLab', 'BahanKimia']
+    },
+    id_penyimpanan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Penyimpanan',
+      required: true
+    },
+    type: {
+      type: String,
+      required: true,
+      enum: ['IN', 'OUT', 'ADJUSTMENT']
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    previous_stock: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    new_stock: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    deskripsi: {
+      type: String,
+      trim: true
+    },
+    created_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
+  {
+    timestamps: true
+  }
+)
 
-stockMovementSchema.index({ item: 1, createdAt: -1 });
+stock_movement_schema.index({ item_id: 1, createdAt: -1 })
 
-module.exports = mongoose.model("StockMovement", stockMovementSchema);
+module.exports = mongoose.model('StockMovement', stock_movement_schema)
