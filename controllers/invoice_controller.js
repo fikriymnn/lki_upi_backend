@@ -4,6 +4,24 @@ const Order = require("../model/order_model");
 const mongoose = require("mongoose");
 const user_model = require("../model/user_model");
 
+function formatUserData(invoice) {
+  if (invoice.user_data) {
+    invoice.id_user = [
+      {
+        nama_lengkap: invoice.user_data.nama_lengkap,
+        email: invoice.user_data.email,
+        no_telp: invoice.user_data.no_telp,
+        no_whatsapp: invoice.user_data.no_whatsapp,
+        jenis_institusi: invoice.user_data.jenis_institusi,
+        nama_institusi: invoice.user_data.nama_institusi,
+        program_studi: invoice.user_data.program_studi,
+        fakultas: invoice.user_data.fakultas
+      }
+    ];
+  }
+
+  return invoice;
+}
 
 
 const invoice_controller = {
@@ -25,14 +43,33 @@ const invoice_controller = {
         nama_lengkap
       } = req.query;
 
+
       if (id) {
         const data = await Invoice.findOne({ _id: id })
           .populate("id_user")
           .select({ id_user: { _id: 0 } });
+
+        const raw = data.toObject();
+
+        if (raw.user_data) {
+          raw.id_user = {
+            nama_lengkap: raw.user_data.nama_lengkap,
+            email: raw.user_data.email,
+            no_telp: raw.user_data.no_telp,
+            no_whatsapp: raw.user_data.no_whatsapp,
+            jenis_institusi: raw.user_data.jenis_institusi,
+            nama_institusi: raw.user_data.nama_institusi,
+            program_studi: raw.user_data.program_studi,
+            fakultas: raw.user_data.fakultas,
+          };
+        }
+
         res.status(200).json({
           success: true,
-          data: data,
+          data: raw,
         });
+
+
       } else if (
         nama_lengkap &&
         skip &&
@@ -47,59 +84,89 @@ const invoice_controller = {
           success ||
           jenis_pengujian)
       ) {
-        let obj = {
 
-        };
+        let obj = {};
 
         const s = parseInt(skip);
         const l = parseInt(limit);
+
+
         if (status) {
-          if (status instanceof Array) {
-            obj.status = { $in: status };
-          } else {
-            obj.status = status;
-          }
+          obj.status = status instanceof Array ? { $in: status } : status;
         }
+
         if (id_user) {
           obj.id_user = new mongoose.Types.ObjectId(id_user);
         }
+
         if (no_invoice) {
           obj.no_invoice = no_invoice;
         }
+
         if (from && to) {
           obj.date = { $lt: to, $gt: from };
         }
+
         if (year) {
           obj.year = year;
         }
+
         if (month) {
           obj.month = month;
         }
+
         if (success) {
-          obj.success = success == "true" ? true : false;
+          obj.success = success == "true";
         }
+
         if (jenis_pengujian) {
           obj.jenis_pengujian = jenis_pengujian;
         }
 
-
         if (nama_lengkap) {
-          obj.nama_lengkap = { $regex: nama_lengkap, $options: 'i' };
+          obj.nama_lengkap = {
+            $regex: nama_lengkap,
+            $options: "i"
+          };
         }
 
-        const data = await Invoice.aggregate([
-          { $match: obj, },
-          { $sort: { _id: -1 } },
+
+        let data = await Invoice.aggregate([
+          {
+            $match: obj
+          },
+          {
+            $lookup: {
+              foreignField: "_id",
+              localField: "id_user",
+              from: "users",
+              as: "id_user",
+            },
+          },
+          {
+            $sort: {
+              _id: -1
+            }
+          }
         ])
           .skip(s)
           .limit(l);
 
-        const length_data = await Invoice.aggregate([{ $match: obj }]);
+        data = data.map(item => formatUserData(item));
+
+        const length_data = await Invoice.aggregate([
+          {
+            $match: obj
+          }
+        ]);
+
         res.status(200).json({
           success: true,
           length_total: length_data.length,
           data,
         });
+
+
       } else if (
         skip &&
         limit &&
@@ -113,41 +180,50 @@ const invoice_controller = {
           success ||
           jenis_pengujian)
       ) {
+
         let obj = {};
+
         const s = parseInt(skip);
         const l = parseInt(limit);
-        if (status) {
-          if (status instanceof Array) {
-            obj.status = { $in: status };
-          } else {
-            obj.status = status;
-          }
 
+
+        if (status) {
+          obj.status = status instanceof Array ? { $in: status } : status;
         }
+
         if (id_user) {
           obj.id_user = new mongoose.Types.ObjectId(id_user);
         }
+
         if (no_invoice) {
           obj.no_invoice = no_invoice;
         }
+
         if (from && to) {
           obj.date = { $lt: to, $gt: from };
         }
+
         if (year) {
           obj.year = year;
         }
+
         if (month) {
           obj.month = month;
         }
+
         if (success) {
-          obj.success = success == "true" ? true : false;
+          obj.success = success == "true";
         }
+
         if (jenis_pengujian) {
           obj.jenis_pengujian = jenis_pengujian;
         }
 
-        const data = await Invoice.aggregate([
-          { $match: obj },
+
+        let data = await Invoice.aggregate([
+          {
+            $match: obj
+          },
           {
             $lookup: {
               foreignField: "_id",
@@ -156,17 +232,32 @@ const invoice_controller = {
               as: "id_user",
             },
           },
-          { $sort: { _id: -1 } },
+          {
+            $sort: {
+              _id: -1
+            }
+          }
         ])
           .skip(s)
           .limit(l);
-        const length_data = await Invoice.aggregate([{ $match: obj }]);
+
+        data = data.map(item => formatUserData(item));
+
+        const length_data = await Invoice.aggregate([
+          {
+            $match: obj
+          }
+        ]);
+
         res.status(200).json({
           success: true,
           length_total: length_data.length,
           data,
         });
-      } else if (status ||
+
+
+      } else if (
+        status ||
         no_invoice ||
         id_user ||
         from ||
@@ -176,39 +267,45 @@ const invoice_controller = {
         success ||
         jenis_pengujian
       ) {
-        let obj = {};
-        if (status) {
-          if (status instanceof Array) {
-            obj.status = { $in: status };
-          } else {
-            obj.status = status;
-          }
 
+        let obj = {};
+
+        if (status) {
+          obj.status = status instanceof Array ? { $in: status } : status;
         }
+
         if (id_user) {
           obj.id_user = new mongoose.Types.ObjectId(id_user);
         }
+
         if (no_invoice) {
           obj.no_invoice = no_invoice;
         }
+
         if (from && to) {
           obj.date = { $lt: to, $gt: from };
         }
+
         if (year) {
           obj.year = year;
         }
+
         if (month) {
           obj.month = month;
         }
+
         if (success) {
-          obj.success = success == "true" ? true : false;
+          obj.success = success == "true";
         }
+
         if (jenis_pengujian) {
           obj.jenis_pengujian = jenis_pengujian;
         }
 
-        const data = await Invoice.aggregate([
-          { $match: obj },
+        let data = await Invoice.aggregate([
+          {
+            $match: obj
+          },
           {
             $lookup: {
               foreignField: "_id",
@@ -217,17 +314,31 @@ const invoice_controller = {
               as: "id_user",
             },
           },
-          { $sort: { _id: -1 } },
-        ])
+          {
+            $sort: {
+              _id: -1
+            }
+          }
+        ]);
 
-        const length_data = await Invoice.aggregate([{ $match: obj }]);
+        data = data.map(item => formatUserData(item));
+
+        const length_data = await Invoice.aggregate([
+          {
+            $match: obj
+          }
+        ]);
+
         res.status(200).json({
           success: true,
           length_total: length_data.length,
           data,
         });
+
+
       } else if (skip && limit) {
-        const data = await Invoice.aggregate([
+
+        let data = await Invoice.aggregate([
           {
             $lookup: {
               from: "users",
@@ -236,46 +347,61 @@ const invoice_controller = {
               as: "id_user",
             },
           },
-          { $sort: { _id: -1 } },
+          {
+            $sort: {
+              _id: -1
+            }
+          }
         ])
           .skip(parseInt(skip))
           .limit(parseInt(limit));
+
+        data = data.map(item => formatUserData(item));
+
         const length_data = await Invoice.find();
+
         res.status(200).json({
           success: true,
           length_total: length_data.length,
-          data,
+          data
         });
+
+
       } else {
-        const data = await Invoice.aggregate([
+
+        let data = await Invoice.aggregate([
           {
             $lookup: {
               from: "users",
               localField: "id_user",
               foreignField: "_id",
-              as: "id_user",
-            },
+              as: "id_user"
+            }
           },
-          { $sort: { _id: -1 } },
+          {
+            $sort: {
+              _id: -1
+            }
+          }
         ]);
 
-        // data.forEach((v,i)=>{
-        //   async function cek(){
-        //     await Invoice.findByIdAndUpdate(v._id,{nama_lengkap : v.id_user[0].nama_lengkap})
-        //   } 
-        //  cek()
-        // })
+        data = data.map(item => formatUserData(item));
 
         res.status(200).json({
           success: true,
-          data,
+          data
         });
+
       }
+
+
     } catch (err) {
+
       res.status(500).json({
         success: false,
-        message: err.message,
+        message: err.message
       });
+
     }
   },
   update_invoice: async (req, res) => {
@@ -292,17 +418,17 @@ const invoice_controller = {
             jumlahHarga += parseInt(v.hargaSatuan) * parseInt(v.jumlah);
           })
           console.log(req.body)
-          if(jumlahHarga>0){
-          await Invoice.updateOne({ _id: id }, {
-            total_harga: jumlahHarga, status,
-            estimasi_date,
-            catatan, harga_satuan
-          })
-          }else{
-             await Invoice.updateOne({ _id: id }, req.body)
+          if (jumlahHarga > 0) {
+            await Invoice.updateOne({ _id: id }, {
+              total_harga: jumlahHarga, status,
+              estimasi_date,
+              catatan, harga_satuan
+            })
+          } else {
+            await Invoice.updateOne({ _id: id }, req.body)
           }
 
-        } 
+        }
       }
       const data = await Invoice.findOne({ _id: id });
       if (data) {
@@ -361,12 +487,7 @@ const invoice_controller = {
             { status_pengujian: "-", status_report: "-" },
           );
         }
-        // if (status == "Menunggu Pembayaran") {
-        //   await Order.updateOne(
-        //     { no_invoice: data?.no_invoice },
-        //     { status_report: "success" }
-        //   );
-        // }
+
         if (s5_date) {
           await Order.updateOne(
             { no_invoice: data?.no_invoice },
@@ -382,7 +503,6 @@ const invoice_controller = {
         }
 
         await Invoice.updateOne({ _id: id }, req.body);
-
 
       }
       res.status(200).json({

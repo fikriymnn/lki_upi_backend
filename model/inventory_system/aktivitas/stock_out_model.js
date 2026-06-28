@@ -29,7 +29,12 @@ const stock_out_schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
-    }
+    },
+    id_penyimpanan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Penyimpanan',
+      required: true
+    },
   },
   {
     timestamps: true

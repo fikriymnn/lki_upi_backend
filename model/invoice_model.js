@@ -1,11 +1,11 @@
-const  mongoose = require("mongoose")
+const mongoose = require("mongoose")
 const month_bahasa = require("../utils/month_bahasa")
 function timeNow() {
     var d = new Date(),
-      h = (d.getHours()<10?'0':'') + d.getHours(),
-      m = (d.getMinutes()<10?'0':'') + d.getMinutes();
-   return h + ':' + m;
-  }
+        h = (d.getHours() < 10 ? '0' : '') + d.getHours(),
+        m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+    return h + ':' + m;
+}
 
 const invoice_schema = new mongoose.Schema({
     date: {
@@ -14,7 +14,7 @@ const invoice_schema = new mongoose.Schema({
     },
     date_format: {
         type: String,
-        
+
     },
     nama_lengkap: {
         type: String,
@@ -27,7 +27,7 @@ const invoice_schema = new mongoose.Schema({
         type: String,
         default: new Date().getMonth().toString()
     },
-    no_invoice : {
+    no_invoice: {
         type: String
     },
     id_user: {
@@ -47,13 +47,13 @@ const invoice_schema = new mongoose.Schema({
         type: String
     },
     status: {
-        type : String
+        type: String
     },
     bukti_pembayaran: {
-        type : String
+        type: String
     },
     jenis_pengujian: {
-        type:String
+        type: String
     },
     s1_date: {
         type: String,
@@ -82,15 +82,41 @@ const invoice_schema = new mongoose.Schema({
     },
     success: {
         type: Boolean,
-        default : false
+        default: false
     },
     opTask: {
         type: Boolean,
-        default:false
+        default: false
     },
     catatan: {
         type: String,
-    }
+    },
+    user_data: {
+        nama_lengkap: {
+            type: String
+        },
+        email: {
+            type: String
+        },
+        no_telp: {
+            type: String
+        },
+        no_whatsapp: {
+            type: String
+        },
+        jenis_institusi: {
+            type: String
+        },
+        nama_institusi: {
+            type: String
+        },
+        program_studi: {
+            type: String
+        },
+        fakultas: {
+            type: String
+        }
+    },
 })
 
-module.exports = mongoose.model("Invoice",invoice_schema)
+module.exports = mongoose.model("Invoice", invoice_schema)

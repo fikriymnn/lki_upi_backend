@@ -1,65 +1,52 @@
-const Supplier = require('../../model/inventory/supplier_model')
+const Supplier = require('../../model/inventory_system/master/supplier_model')
 
 const supplier_controller = {
-   create_supplier: async (req, res) => {
-      try {
-         const body = req.body
 
-         if (!body.nama_supplier || !body.alamat || !body.no_wa) {
+   // ==============================
+   // GET ALL + GET BY ID
+   // ==============================
+   get_supplier: async (req, res) => {
+      try {
+         const { id } = req.params
+
+         // GET BY ID
+         if (id) {
+            const data = await Supplier.findOne({ _id: id })
+            if (!data) {
+               return res.status(200).json({
+                  success: false,
+                  status: 404,
+                  message: 'Data supplier tidak ditemukan'
+               })
+            }
+
             return res.status(200).json({
-               success: false,
-               status: 400,
-               message: 'Semua field wajib diisi'
+               success: true,
+               data
             })
          }
 
-         const supplier = new Supplier({
-            nama_supplier: body.nama_supplier,
-            alamat: body.alamat,
-            no_wa: body.no_wa
-         })
-
-         await supplier.save()
-
-         return res.status(200).json({
-            success: true,
-            message: 'Supplier berhasil ditambahkan',
-            data: supplier
-         })
-      } catch (err) {
-         console.log(err.message)
-         return res.status(500).json({
-            success: false,
-            message: err.message
-         })
-      }
-   },
-
-get_all_supplier: async (req, res) => {
-      try {
-         const { page = 1, limit = 10, search = '' } = req.query
+         // GET ALL + SEARCH + FILTER + PAGINATION
+         const { page = 1, limit = 10, search = '', alamat = '' } = req.query
 
          const current_page = parseInt(page)
          const per_page = parseInt(limit)
          const skip = (current_page - 1) * per_page
 
          const filter = {
-            $or: [
-               { nama_supplier: { $regex: search, $options: 'i' } },
-               { alamat: { $regex: search, $options: 'i' } },
-               { no_wa: { $regex: search, $options: 'i' } }
-            ]
+            nama_supplier: { $regex: search, $options: 'i' },
+            ...(alamat && { alamat: { $regex: alamat, $options: 'i' } })
          }
 
          const total_data = await Supplier.countDocuments(filter)
-         const suppliers = await Supplier.find(filter)
+         const data = await Supplier.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(per_page)
 
          return res.status(200).json({
             success: true,
-            data: suppliers,
+            data,
             pagination: {
                total_data,
                total_page: Math.ceil(total_data / per_page),
@@ -75,42 +62,72 @@ get_all_supplier: async (req, res) => {
       }
    },
 
-   get_supplier_by_id: async (req, res) => {
+   // ==============================
+   // ADD
+   // ==============================
+   add_supplier: async (req, res) => {
       try {
-         const { id } = req.params
+         const body = req.body
 
-         const supplier = await Supplier.findOne({ _id: id })
-         if (!supplier) {
+         if (!body.nama_supplier) {
             return res.status(200).json({
                success: false,
-               status: 404,
-               message: 'Supplier tidak ditemukan'
+               status: 400,
+               message: 'Nama supplier wajib diisi'
             })
          }
 
+         if (!body.alamat) {
+            return res.status(200).json({
+               success: false,
+               status: 400,
+               message: 'Alamat wajib diisi'
+            })
+         }
+
+         if (!body.no_wa) {
+            return res.status(200).json({
+               success: false,
+               status: 400,
+               message: 'No WhatsApp wajib diisi'
+            })
+         }
+
+         const data = new Supplier({
+            nama_supplier: body.nama_supplier,
+            alamat: body.alamat,
+            no_wa: body.no_wa
+         })
+
+         await data.save()
+
          return res.status(200).json({
             success: true,
-            data: supplier
+            message: 'Supplier berhasil ditambahkan',
+            data
          })
       } catch (err) {
          return res.status(500).json({
             success: false,
-            message: 'ID tidak valid'
+            message: err.message
          })
       }
    },
 
+   // ==============================
+   // UPDATE
+   // ==============================
    update_supplier: async (req, res) => {
       try {
-         const body = req.body
          const { id } = req.params
+         const body = req.body
 
-         const supplier = await Supplier.findOne({ _id: id })
-         if (!supplier) {
+         const data = await Supplier.findOne({ _id: id })
+         if (!data) {
             return res.status(200).json({
                success: false,
                status: 404,
-               message: 'Supplier tidak ditemukan'
+               message: 'Data supplier tidak ditemukan'
             })
          }
 
@@ -128,16 +145,19 @@ get_all_supplier: async (req, res) => {
       }
    },
 
+   // ==============================
+   // DELETE
+   // ==============================
    delete_supplier: async (req, res) => {
       try {
          const { id } = req.params
 
-         const supplier = await Supplier.findOne({ _id: id })
-         if (!supplier) {
+         const data = await Supplier.findOne({ _id: id })
+         if (!data) {
             return res.status(200).json({
                success: false,
                status: 404,
-               message: 'Supplier tidak ditemukan'
+               message: 'Data supplier tidak ditemukan'
             })
          }
 

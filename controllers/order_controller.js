@@ -379,9 +379,20 @@ const order_controller = {
           no_invoice: invoice,
           total_harga: 0,
           estimasi_harga: 0,
-          nama_lengkap: req.user.nama_lengkap,
+          nama_lengkap: req.body[0].user_data?.nama_lengkap || req.user.nama_lengkap,
           id_user: req.user._id,
           status: "menunggu form dikonfirmasi",
+          // tambahan baru
+          user_data: {
+            nama_lengkap: req.body[0].user_data?.nama_lengkap || req.user.nama_lengkap,
+            email: req.body[0].user_data?.email || req.user.email,
+            no_telp: req.body[0].user_data?.no_telp || req.user.no_telp,
+            no_whatsapp: req.body[0].user_data?.no_whatsapp || req.user.no_whatsapp,
+            jenis_institusi: req.body[0].user_data?.jenis_institusi || req.user.jenis_institusi,
+            nama_institusi: req.body[0].user_data?.nama_institusi || req.user.nama_institusi,
+            program_studi: req.body[0].user_data?.program_studi || req.user.program_studi,
+            fakultas: req.body[0].user_data?.fakultas || req.user.fakultas
+          },
           jenis_pengujian: req.body[0].jenis_pengujian[0],
           s1_date: dateFormatTgl,
           date_format: `${new Date().getDate()} ${month_bahasa(

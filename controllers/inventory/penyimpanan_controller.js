@@ -1,13 +1,15 @@
-const Penyimpanan = require('../../model/inventory/penyimpanan_model')
+const Penyimpanan = require('../../model/inventory_system/master/penyimpanan_model')
 
 const penyimpanan_controller = {
+
+   // ==============================
+   // GET ALL + GET BY ID
+   // ==============================
    get_penyimpanan: async (req, res) => {
       try {
          const { id } = req.params
 
-         // ======================
          // GET BY ID
-         // ======================
          if (id) {
             const data = await Penyimpanan.findOne({ _id: id })
             if (!data) {
@@ -24,9 +26,7 @@ const penyimpanan_controller = {
             })
          }
 
-         // ======================
          // GET ALL + SEARCH + PAGINATION
-         // ======================
          const { page = 1, limit = 10, search = '' } = req.query
 
          const current_page = parseInt(page)
@@ -61,6 +61,9 @@ const penyimpanan_controller = {
       }
    },
 
+   // ==============================
+   // ADD
+   // ==============================
    add_penyimpanan: async (req, res) => {
       try {
          const body = req.body
@@ -101,6 +104,9 @@ const penyimpanan_controller = {
       }
    },
 
+   // ==============================
+   // UPDATE
+   // ==============================
    update_penyimpanan: async (req, res) => {
       try {
          const { id } = req.params
@@ -115,7 +121,7 @@ const penyimpanan_controller = {
             })
          }
 
-         // Cegah duplikasi unique
+         // Cegah duplikasi nama penyimpanan
          if (body.penyimpanan) {
             const exist = await Penyimpanan.findOne({
                penyimpanan: body.penyimpanan,
@@ -144,6 +150,9 @@ const penyimpanan_controller = {
       }
    },
 
+   // ==============================
+   // DELETE
+   // ==============================
    delete_penyimpanan: async (req, res) => {
       try {
          const { id } = req.params
