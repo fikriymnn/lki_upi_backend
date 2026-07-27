@@ -1,6 +1,8 @@
 const User = require('../model/user_model')
 const bcrypt = require('bcrypt')
 const { generate_access_token } = require('../utils/jwt')
+const { send_reset_email } = require('../utils/mailer')
+const crypto = require('crypto')
 
 const user_controller = {
    register: async (req, res) => {
@@ -275,6 +277,75 @@ const user_controller = {
          }
 
       } catch (err) {
+         return res.status(500).json({
+            success: false,
+            message: err.message
+         })
+      }
+   },
+   forgot_password: async (req, res) => {
+      try {
+         const { email } = req.body
+         const user = await User.findOne({ email })
+         if (!user) {
+            return res.status(200).json({
+               status: 400,
+               success: false,
+               message: "Email tidak ditemukan."
+            })
+         }
+
+         const reset_token = crypto.randomBytes(32).toString('hex')
+         user.reset_password_token = reset_token
+         user.reset_password_expires = Date.now() + 3600000 // 1 jam
+         await user.save()
+
+         const reset_link = `${process.env.FRONTEND_URL}/lupapassword/${reset_token}`
+         await send_reset_email(user.email, reset_link)
+
+         return res.status(200).json({
+            success: true,
+            message: "Link reset password telah dikirim ke email."
+         })
+      } catch (err) {
+         console.log(err.message)
+         return res.status(500).json({
+            success: false,
+            message: err.message
+         })
+      }
+   },
+
+   reset_password: async (req, res) => {
+      try {
+         const { token } = req.params
+         const { password } = req.body
+
+         const user = await User.findOne({
+            reset_password_token: token,
+            reset_password_expires: { $gt: Date.now() }
+         })
+
+         if (!user) {
+            return res.status(200).json({
+               status: 400,
+               success: false,
+               message: "Token tidak valid atau sudah kadaluarsa."
+            })
+         }
+
+         const hash_password = await bcrypt.hash(password, 10)
+         user.password = hash_password
+         user.reset_password_token = null
+         user.reset_password_expires = null
+         await user.save()
+
+         return res.status(200).json({
+            success: true,
+            message: "Password berhasil direset."
+         })
+      } catch (err) {
+         console.log(err.message)
          return res.status(500).json({
             success: false,
             message: err.message

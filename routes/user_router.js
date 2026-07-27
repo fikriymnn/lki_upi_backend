@@ -10,5 +10,7 @@ router.put("/edit_user/:id",auth,user_controller.edit_user)
 router.get("/user/:id?",auth,user_controller.get_user)
 router.get("/remember/:id?",auth,user_controller.remember_user)
 router.get("/admin_user",user_controller.getAdmin_user)
+router.post("/forgot_password", user_controller.forgot_password)
+router.post("/reset_password/:token", user_controller.reset_password)
 
 module.exports = router
