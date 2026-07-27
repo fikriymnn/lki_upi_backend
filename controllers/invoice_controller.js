@@ -4,6 +4,46 @@ const Order = require("../model/order_model");
 const mongoose = require("mongoose");
 const user_model = require("../model/user_model");
 
+// ── Helper untuk auto-hitung estimasi_date ──────────────────────────
+function get_hari_kerja(lama_pengerjaan_str) {
+  if (!lama_pengerjaan_str) return 0;
+  const match = lama_pengerjaan_str.match(/\d+/);
+  return match ? parseInt(match[0]) : 0;
+}
+
+function parse_tanggal_indo(date_str) {
+  // format: "HH:mm D Month YYYY" contoh "14:32 27 Juli 2026"
+  if (!date_str) return null;
+  const parts = date_str.trim().split(" ");
+  const tahun = parseInt(parts[parts.length - 1]);
+  const bulanNama = parts[parts.length - 2];
+  const tanggal = parseInt(parts[parts.length - 3]);
+
+  const bulanIndex = [...Array(12).keys()].findIndex(
+    (i) => month_bahasa(i) === bulanNama
+  );
+
+  if (isNaN(tahun) || isNaN(tanggal) || bulanIndex === -1) return null;
+  return new Date(tahun, bulanIndex, tanggal);
+}
+
+function add_hari_kerja(startDate, jumlahHari) {
+  const result = new Date(startDate);
+  let added = 0;
+  while (added < jumlahHari) {
+    result.setDate(result.getDate() + 1);
+    const day = result.getDay(); // 0 = Minggu, 6 = Sabtu
+    if (day !== 0 && day !== 6) {
+      added++;
+    }
+  }
+  return result;
+}
+
+function format_tanggal_indo(date) {
+  return `${date.getDate()} ${month_bahasa(date.getMonth())} ${date.getFullYear()}`;
+}
+
 function formatUserData(invoice) {
   if (invoice.user_data) {
     invoice.id_user = [
@@ -407,7 +447,25 @@ const invoice_controller = {
   update_invoice: async (req, res) => {
     try {
       const { id } = req.params;
-      const { total_harga, s5_date, s6_date, s8_date, status, harga_satuan, estimasi_date, catatan } = req.body;
+      let { total_harga, s5_date, s6_date, s8_date, status, harga_satuan, estimasi_date, catatan } = req.body;
+
+      // ── NEW: auto-hitung estimasi_date saat status jadi "Form Dikonfirmasi" ──
+      if (status === "Form Dikonfirmasi" && req.body.s2_date) {
+        const invoiceMeta = await Invoice.findOne({ _id: id }).select("no_invoice");
+        const orders = await Order.find({ no_invoice: invoiceMeta?.no_invoice });
+
+        const maxHariKerja = orders.length > 0
+          ? Math.max(...orders.map((o) => get_hari_kerja(o.lama_pengerjaan)))
+          : 0;
+
+        const tanggalMulai = parse_tanggal_indo(req.body.s2_date);
+        if (tanggalMulai && maxHariKerja > 0) {
+          const tanggalEstimasi = add_hari_kerja(tanggalMulai, maxHariKerja);
+          estimasi_date = format_tanggal_indo(tanggalEstimasi);
+          req.body.estimasi_date = estimasi_date;
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────────
 
       if (status == "Order Dibatalkan") {
         await Invoice.updateOne({ _id: id }, { status: "Order Dibatalkan", success: true });
