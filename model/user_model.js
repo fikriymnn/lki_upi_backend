@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+const AFFILIATE_ROLES = ['laboran', 'ketua_lab']
 
 const user_schema = new mongoose.Schema({
     nama_lengkap: {
@@ -16,7 +17,9 @@ const user_schema = new mongoose.Schema({
     },
     no_telp: {
         type: String,
-        required: true
+        required: function () {
+            return !AFFILIATE_ROLES.includes(this.role)
+        }
     },
     no_whatsapp: {
         type: String,
@@ -24,7 +27,9 @@ const user_schema = new mongoose.Schema({
     },
     jenis_institusi: {
         type: String,
-        required: true
+        required: function () {
+            return !AFFILIATE_ROLES.includes(this.role)
+        }
     },
     nama_institusi: {
         type: String,
@@ -38,6 +43,17 @@ const user_schema = new mongoose.Schema({
     role: {
         type: String,
         default: "user"
+    },
+    id_affiliate: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "LabAffiliate",
+        required: function () {
+            return AFFILIATE_ROLES.includes(this.role)
+        }
+    },
+    status: {
+        type: String,
+        default: "aktif"
     },
     reset_password_token: {
         type: String,

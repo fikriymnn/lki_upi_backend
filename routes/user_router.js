@@ -13,4 +13,10 @@ router.get("/admin_user",user_controller.getAdmin_user)
 router.post("/forgot_password", user_controller.forgot_password)
 router.post("/reset_password/:token", user_controller.reset_password)
 
+// ── Affiliate User Management (role: laboran / ketua_lab) ──
+router.get("/affiliate_user/:id?", auth, user_controller.get_affiliate_user)
+router.post("/affiliate_user", auth, user_controller.add_affiliate_user)
+router.put("/affiliate_user/:id", auth, user_controller.update_affiliate_user)
+router.delete("/affiliate_user/:id", auth, user_controller.delete_affiliate_user)
+
 module.exports = router

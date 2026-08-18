@@ -21,5 +21,11 @@ router.use("/",require("./inventory/alat_lab_router"))
 // router.use("/",require("./inventory/stock_movement_router"))
 // router.use("/",require("./inventory/stock_opname_router"))
 
+//Inventory
+router.use("/",require("./affiliate/catalog_router"))
+router.use("/",require("./affiliate/lab_affiliate_router"))
+router.use("/",require("./affiliate/layanan_analisis_router"))
+router.use("/",require("./affiliate/order_affiliate_router"))
+
 
 module.exports = router
