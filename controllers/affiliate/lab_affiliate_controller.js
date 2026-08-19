@@ -10,7 +10,7 @@ const lab_affiliate_controller = {
          const { id } = req.params
 
          if (id) {
-            const data = await LabAffiliate.findOne({ _id: id })
+            const data = await LabAffiliate.findOne({ _id: id, deleted_at: null })
             if (!data) {
                return res.status(200).json({
                   success: false,
@@ -28,7 +28,8 @@ const lab_affiliate_controller = {
          const skip = (current_page - 1) * per_page
 
          const filter = {
-            nama_laboratorium: { $regex: search, $options: 'i' }
+            nama_laboratorium: { $regex: search, $options: 'i' },
+            deleted_at: null
          }
 
          const total_data = await LabAffiliate.countDocuments(filter)
@@ -51,13 +52,14 @@ const lab_affiliate_controller = {
          return res.status(500).json({ success: false, message: err.message })
       }
    },
-     // ==============================
+   
+   // ==============================
    // GET PUBLIC (untuk halaman /affiliate) — hanya lab berstatus aktif,
    // dilengkapi jenis_layanan_aktif hasil distinct dari Catalog milik lab tsb
    // ==============================
    get_lab_affiliate_public: async (req, res) => {
       try {
-         const labs = await LabAffiliate.find({ status: 'aktif' }).sort({ createdAt: -1 })
+         const labs = await LabAffiliate.find({ status: 'aktif', deleted_at: null }).sort({ createdAt: -1 })
 
          const ids = labs.map((l) => l._id)
          const catalogs = await Catalog.find({ id_affiliate: { $in: ids } }).select('id_affiliate tipe_layanan')
@@ -100,7 +102,10 @@ const lab_affiliate_controller = {
             return res.status(200).json({ success: false, status: 400, message: 'Email wajib diisi' })
          }
 
-         const kode_exists = await LabAffiliate.findOne({ kode_laboratorium: body.kode_laboratorium.trim().toUpperCase() })
+         const kode_exists = await LabAffiliate.findOne({ 
+            kode_laboratorium: body.kode_laboratorium.trim().toUpperCase(),
+            deleted_at: null 
+         })
          if (kode_exists) {
             return res.status(200).json({ success: false, status: 400, message: 'Kode laboratorium sudah digunakan lab lain' })
          }
@@ -133,7 +138,7 @@ const lab_affiliate_controller = {
          const { id } = req.params
          const body = req.body
 
-         const data = await LabAffiliate.findOne({ _id: id })
+         const data = await LabAffiliate.findOne({ _id: id, deleted_at: null })
          if (!data) {
             return res.status(200).json({ success: false, status: 404, message: 'Data lab affiliate tidak ditemukan' })
          }
@@ -147,7 +152,11 @@ const lab_affiliate_controller = {
                return res.status(200).json({ success: false, status: 400, message: 'Kode laboratorium tidak boleh kosong' })
             }
             const kode_upper = body.kode_laboratorium.trim().toUpperCase()
-            const kode_exists = await LabAffiliate.findOne({ kode_laboratorium: kode_upper, _id: { $ne: id } })
+            const kode_exists = await LabAffiliate.findOne({ 
+               kode_laboratorium: kode_upper, 
+               _id: { $ne: id },
+               deleted_at: null 
+            })
             if (kode_exists) {
                return res.status(200).json({ success: false, status: 400, message: 'Kode laboratorium sudah digunakan lab lain' })
             }
@@ -163,18 +172,27 @@ const lab_affiliate_controller = {
    },
 
    // ==============================
-   // DELETE
+   // DELETE (SOFT DELETE)
    // ==============================
    delete_lab_affiliate: async (req, res) => {
       try {
          const { id } = req.params
 
-         const data = await LabAffiliate.findOne({ _id: id })
+         const data = await LabAffiliate.findOne({ _id: id, deleted_at: null })
          if (!data) {
             return res.status(200).json({ success: false, status: 404, message: 'Data lab affiliate tidak ditemukan' })
          }
 
-         await LabAffiliate.deleteOne({ _id: id })
+         // Soft delete: set deleted_at dan ubah status menjadi nonaktif
+         await LabAffiliate.updateOne(
+            { _id: id },
+            { 
+               $set: { 
+                  deleted_at: new Date(),
+                  status: 'nonaktif'
+               } 
+            }
+         )
 
          return res.status(200).json({ success: true, message: 'Lab affiliate berhasil dihapus' })
       } catch (err) {

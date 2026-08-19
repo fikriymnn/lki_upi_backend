@@ -27,6 +27,10 @@ const lab_affiliate_schema = new mongoose.Schema(
       type: String,
       default: "aktif",
     },
+    deleted_at: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
