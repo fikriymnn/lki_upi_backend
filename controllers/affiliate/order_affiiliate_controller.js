@@ -13,16 +13,17 @@ const STATUS_OPTIONS = [
    'Selesai',
 ]
 
+// ✅ Data pemohon (nama, email, kontak, institusi, dll) sudah tidak bisa diedit siapa pun
+// lewat endpoint ini — hanya rincian layanan yang boleh dikoreksi laboran/ketua_lab/admin.
 const EDITABLE_FIELDS = [
-   'nama_lengkap', 'email', 'no_telp', 'no_whatsapp',
-   'jenis_institusi', 'nama_institusi', 'program_studi', 'fakultas',
-   'nama_pembimbing', 'catatan',
    'layanan_analisis', 'sewa_lab', 'sewa_alat', 'pembelian_bahan',
 ]
 
 const STATUS_TRANSITIONS = {
    'Menunggu Order Dikonfirmasi': { targets: ['Order Dikonfirmasi', 'Order Ditolak'], roles: ['laboran'] },
    'Order Dikonfirmasi': { targets: ['Order Diproses'], roles: ['laboran'] },
+   // ⬅️ BARU: laboran kirim order ke ketua lab setelah laporan & rincian harga terisi
+   'Order Diproses': { targets: ['Menunggu Diverifikasi'], roles: ['laboran'] },
    'Menunggu Diverifikasi': { targets: ['Selesai Diverifikasi', 'Order Diproses'], roles: ['ketua_lab'] },
    'Menunggu Verifikasi Pembayaran': { targets: ['Selesai'], roles: ['admin', 'superadmin'] },
 }
@@ -264,6 +265,16 @@ const order_affiliate_controller = {
             return res.status(200).json({ success: false, status: 400, message: 'Rincian invoice belum diisi. Gunakan menu Input Invoice terlebih dahulu' })
          }
 
+         // ⬅️ BARU: laboran tidak boleh kirim ke ketua lab sebelum laporan & rincian harga lengkap
+         if (status_pengujian === 'Menunggu Diverifikasi') {
+            if (!data.laporan) {
+               return res.status(200).json({ success: false, status: 400, message: 'Upload laporan terlebih dahulu sebelum mengirim ke ketua lab' })
+            }
+            if (!data.rincian_harga_invoice || data.rincian_harga_invoice.length === 0) {
+               return res.status(200).json({ success: false, status: 400, message: 'Isi rincian harga terlebih dahulu sebelum mengirim ke ketua lab' })
+            }
+         }
+
          data.status_pengujian = status_pengujian
          await data.save()
 
@@ -304,14 +315,24 @@ const order_affiliate_controller = {
       }
    },
 
+      // ==============================
+   // UPLOAD LAPORAN — hanya laboran, hanya field `laporan` (rincian_biaya sudah tidak dipakai lagi,
+   // digantikan sistem rincian_harga_invoice yang diisi lewat update_invoice_order_affiliate).
+   // Bisa diupload sejak status "Order Dikonfirmasi" — saat pertama kali tersimpan di tahap itu,
+   // status otomatis dipindah ke "Order Diproses" (menandai laboran mulai bekerja).
+   // ==============================
    upload_laporan_order_affiliate: async (req, res) => {
       try {
          const { id } = req.params
-         const { laporan, rincian_biaya } = req.body
+         const { laporan } = req.body
          const role = req.user?.role
 
          if (role !== 'laboran') {
-            return res.status(200).json({ success: false, status: 403, message: 'Hanya laboran yang bisa mengupload laporan & rincian biaya' })
+            return res.status(200).json({ success: false, status: 403, message: 'Hanya laboran yang bisa mengupload laporan' })
+         }
+
+         if (!laporan) {
+            return res.status(200).json({ success: false, status: 400, message: 'File laporan wajib diisi' })
          }
 
          const data = await OrderAffiliate.findOne({ _id: id })
@@ -323,15 +344,15 @@ const order_affiliate_controller = {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
          }
 
-         if (!['Order Diproses', 'Menunggu Diverifikasi'].includes(data.status_pengujian)) {
-            return res.status(200).json({ success: false, status: 400, message: 'Laporan hanya bisa diupload saat status "Order Diproses"' })
+         if (!['Order Dikonfirmasi', 'Order Diproses'].includes(data.status_pengujian)) {
+            return res.status(200).json({ success: false, status: 400, message: 'Laporan hanya bisa diupload saat status "Order Dikonfirmasi" atau "Order Diproses"' })
          }
 
-         if (laporan !== undefined) data.laporan = laporan
-         if (rincian_biaya !== undefined) data.rincian_biaya = rincian_biaya
+         data.laporan = laporan
 
-         if (data.laporan && data.rincian_biaya) {
-            data.status_pengujian = 'Menunggu Diverifikasi'
+         // Upload pertama kali di tahap "Order Dikonfirmasi" otomatis memindahkan status
+         if (data.status_pengujian === 'Order Dikonfirmasi') {
+            data.status_pengujian = 'Order Diproses'
          }
 
          await data.save()
@@ -350,14 +371,26 @@ const order_affiliate_controller = {
    // FIX: total per baris dihitung ulang di BE (jumlah x harga_satuan) sebagai fallback kalau
    // FE tidak mengirim total, biar tidak pernah NaN/kosong.
    // ==============================
+   // ==============================
+   // INPUT / KOREKSI RINCIAN HARGA INVOICE
+   // - laboran: boleh isi/koreksi selama status "Order Dikonfirmasi" atau "Order Diproses"
+   //   (status TIDAK berubah di sini — laboran masih perlu upload laporan & klik "Kirim ke
+   //   Ketua Lab" secara terpisah untuk pindah ke "Menunggu Diverifikasi").
+   // - admin/superadmin: boleh koreksi selama status "Selesai Diverifikasi" atau "Menunggu
+   //   Pembayaran" — dan SETELAH disimpan, status otomatis dipindah ke "Menunggu Pembayaran"
+   //   (perilaku lama, dipertahankan supaya tombol download invoice untuk user langsung aktif).
+   // ==============================
    update_invoice_order_affiliate: async (req, res) => {
       try {
          const { id } = req.params
          const { rincian_harga_invoice } = req.body
          const role = req.user?.role
 
-         if (!['admin', 'superadmin'].includes(role)) {
-            return res.status(200).json({ success: false, status: 403, message: 'Hanya admin yang bisa menginput invoice' })
+         const LABORAN_STATUS = ['Order Dikonfirmasi', 'Order Diproses']
+         const ADMIN_STATUS = ['Selesai Diverifikasi', 'Menunggu Pembayaran']
+
+         if (!['laboran', 'admin', 'superadmin'].includes(role)) {
+            return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses untuk menginput rincian harga invoice' })
          }
 
          if (!Array.isArray(rincian_harga_invoice) || rincian_harga_invoice.length === 0) {
@@ -369,8 +402,15 @@ const order_affiliate_controller = {
             return res.status(200).json({ success: false, status: 404, message: 'Data order tidak ditemukan' })
          }
 
-         if (!['Selesai Diverifikasi', 'Menunggu Pembayaran'].includes(data.status_pengujian)) {
-            return res.status(200).json({ success: false, status: 400, message: 'Invoice hanya bisa diinput/dikoreksi saat status "Selesai Diverifikasi" atau "Menunggu Pembayaran"' })
+         if (!check_affiliate_access(req, data)) {
+            return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
+         }
+
+         const is_laboran_window = role === 'laboran' && LABORAN_STATUS.includes(data.status_pengujian)
+         const is_admin_window = ['admin', 'superadmin'].includes(role) && ADMIN_STATUS.includes(data.status_pengujian)
+
+         if (!is_laboran_window && !is_admin_window) {
+            return res.status(200).json({ success: false, status: 400, message: 'Rincian harga invoice tidak bisa diinput/dikoreksi pada tahap status order saat ini' })
          }
 
          const rincian_normalized = rincian_harga_invoice.map((r) => {
@@ -394,11 +434,16 @@ const order_affiliate_controller = {
 
          data.rincian_harga_invoice = rincian_normalized
          data.total_keseluruhan = total_keseluruhan
-         data.status_pengujian = 'Menunggu Pembayaran'
+
+         // Hanya admin yang menyimpan invoice di tahap ini yang memicu transisi status —
+         // laboran cuma "menyiapkan" rincian harga, belum memicu apa pun.
+         if (is_admin_window) {
+            data.status_pengujian = 'Menunggu Pembayaran'
+         }
 
          await data.save()
 
-         return res.status(200).json({ success: true, message: 'Invoice berhasil disimpan', data })
+         return res.status(200).json({ success: true, message: 'Rincian harga invoice berhasil disimpan', data })
       } catch (err) {
          return res.status(500).json({ success: false, message: err.message })
       }
