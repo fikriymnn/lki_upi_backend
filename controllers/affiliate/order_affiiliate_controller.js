@@ -117,90 +117,122 @@ const check_affiliate_access = (req, order) => {
    return true
 }
 
+
+// ==============================
+// NORMALISASI ITEM LAYANAN — pastikan field angka selalu bertipe Number
+// (string kosong / undefined / NaN dari FE jadi 0, bukan null)
+// ==============================
+const normalize_layanan_items = (body) => {
+   const to_num = (v) => Number(v) || 0
+   const out = { ...body }
+
+   if (Array.isArray(body.pembelian_bahan)) {
+      out.pembelian_bahan = body.pembelian_bahan.map((r) => ({ ...r, jumlah: to_num(r.jumlah) }))
+   }
+   if (Array.isArray(body.sewa_lab)) {
+      out.sewa_lab = body.sewa_lab.map((r) => ({ ...r, jumlah: to_num(r.jumlah) }))
+   }
+   if (Array.isArray(body.sewa_alat)) {
+      out.sewa_alat = body.sewa_alat.map((r) => ({ ...r, jumlah: to_num(r.jumlah) }))
+   }
+   if (Array.isArray(body.layanan_analisis)) {
+      out.layanan_analisis = body.layanan_analisis.map((r) => ({ ...r, jumlah_sample: to_num(r.jumlah_sample) }))
+   }
+
+   return out
+}
+
+const is_bahan_only = (order) =>
+   (order.pembelian_bahan?.length || 0) > 0 &&
+   !(order.layanan_analisis?.length || 0) &&
+   !(order.sewa_lab?.length || 0) &&
+   !(order.sewa_alat?.length || 0)
+
 const order_affiliate_controller = {
 
-   get_order_affiliate: async (req, res) => {
-      try {
-         const { id } = req.params
-         const role = req.user?.role
+get_order_affiliate: async (req, res) => {
+   try {
+      const { id } = req.params
+      const role = req.user?.role
 
-         if (id) {
-            const data = await OrderAffiliate.findOne({ _id: id })
-               .populate('id_affiliate', 'nama_laboratorium kode_laboratorium email no_whatsapp alamat')
-               .populate('id_user', 'nama_lengkap email')
-            if (!data) {
-               return res.status(200).json({ success: false, status: 404, message: 'Data order tidak ditemukan' })
-            }
-
-            if (!check_affiliate_access(req, data)) {
-               return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
-            }
-            if (role === 'user' && data.id_user?._id?.toString() !== req.user._id?.toString()) {
-               return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order ini' })
-            }
-
-            return res.status(200).json({ success: true, data })
+      if (id) {
+         const data = await OrderAffiliate.findOne({ _id: id })
+            .populate('id_affiliate', 'nama_laboratorium kode_laboratorium email no_whatsapp alamat')
+            .populate('id_user', 'nama_lengkap email')
+         if (!data) {
+            return res.status(200).json({ success: false, status: 404, message: 'Data order tidak ditemukan' })
          }
 
-         const { id_user, page = 1, limit = 10, search = '', status = '', year = '', month = '' } = req.query
-         let { id_affiliate } = req.query
-
-         if (['laboran', 'ketua_lab'].includes(role)) {
-            id_affiliate = req.user.id_affiliate
+         if (!check_affiliate_access(req, data)) {
+            return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
+         }
+         if (role === 'user' && data.id_user?._id?.toString() !== req.user._id?.toString()) {
+            return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order ini' })
          }
 
-         const current_page = parseInt(page)
-         const per_page = parseInt(limit)
-         const skip = (current_page - 1) * per_page
-
-         const filter = {}
-         if (id_affiliate) filter.id_affiliate = id_affiliate
-
-         if (role === 'user') {
-            filter.id_user = req.user._id
-         } else if (id_user) {
-            filter.id_user = id_user
-         }
-
-         if (!id_affiliate && !filter.id_user) {
-            return res.status(200).json({ success: false, status: 400, message: 'id_affiliate atau id_user wajib diisi' })
-         }
-         if (status) filter.status_pengujian = status
-         if (search) {
-            filter.$or = [
-               { no_invoice: { $regex: search, $options: 'i' } },
-               { nama_lengkap: { $regex: search, $options: 'i' } },
-            ]
-         }
-
-         if (year) filter.year = year.toString()
-         if (month) filter.month = (parseInt(month) - 1).toString()
-
-         const total_data = await OrderAffiliate.countDocuments(filter)
-         const data = await OrderAffiliate.find(filter)
-            .populate('id_affiliate', 'nama_laboratorium kode_laboratorium')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(per_page)
-
-         return res.status(200).json({
-            success: true,
-            data,
-            pagination: {
-               total_data,
-               total_page: Math.ceil(total_data / per_page),
-               current_page,
-               per_page,
-            },
-         })
-      } catch (err) {
-         return res.status(500).json({ success: false, message: err.message })
+         return res.status(200).json({ success: true, data })
       }
-   },
+
+      const { id_user, page = 1, limit = 10, search = '', status = '', year = '', month = '' } = req.query
+      let { id_affiliate } = req.query
+
+      if (['laboran', 'ketua_lab'].includes(role)) {
+         id_affiliate = req.user.id_affiliate
+      }
+
+      const current_page = parseInt(page)
+      const per_page = parseInt(limit)
+      const skip = (current_page - 1) * per_page
+
+      const filter = {}
+      if (id_affiliate) filter.id_affiliate = id_affiliate
+
+      if (role === 'user') {
+         filter.id_user = req.user._id
+      } else if (id_user) {
+         filter.id_user = id_user
+      }
+
+      // ⬅️ DIUBAH: admin/superadmin boleh query tanpa id_affiliate (lintas lab), dipakai notifikasi admin
+      if (!id_affiliate && !filter.id_user && !['admin', 'superadmin'].includes(role)) {
+         return res.status(200).json({ success: false, status: 400, message: 'id_affiliate atau id_user wajib diisi' })
+      }
+      if (status) filter.status_pengujian = status
+      if (search) {
+         filter.$or = [
+            { no_invoice: { $regex: search, $options: 'i' } },
+            { nama_lengkap: { $regex: search, $options: 'i' } },
+         ]
+      }
+
+      if (year) filter.year = year.toString()
+      if (month) filter.month = (parseInt(month) - 1).toString()
+
+      const total_data = await OrderAffiliate.countDocuments(filter)
+      const data = await OrderAffiliate.find(filter)
+         .populate('id_affiliate', 'nama_laboratorium kode_laboratorium')
+         .sort({ createdAt: -1 })
+         .skip(skip)
+         .limit(per_page)
+
+      return res.status(200).json({
+         success: true,
+         data,
+         pagination: {
+            total_data,
+            total_page: Math.ceil(total_data / per_page),
+            current_page,
+            per_page,
+         },
+      })
+   } catch (err) {
+      return res.status(500).json({ success: false, message: err.message })
+   }
+},
 
    add_order_affiliate: async (req, res) => {
       try {
-         const body = req.body
+         const body = normalize_layanan_items(req.body)
 
          if (!body.id_affiliate) {
             return res.status(200).json({ success: false, status: 400, message: 'id_affiliate wajib diisi' })
@@ -249,7 +281,14 @@ const order_affiliate_controller = {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
          }
 
-         const rule = STATUS_TRANSITIONS[data.status_pengujian]
+         let rule = STATUS_TRANSITIONS[data.status_pengujian]
+
+         // Order bahan-only: laboran boleh langsung kirim ke ketua lab dari "Order Dikonfirmasi"
+         // (tanpa harus upload laporan yang memindahkan status ke "Order Diproses")
+         if (data.status_pengujian === 'Order Dikonfirmasi' && is_bahan_only(data)) {
+            rule = { targets: ['Order Diproses', 'Menunggu Diverifikasi'], roles: ['laboran'] }
+         }
+
          if (!rule || !rule.targets.includes(status_pengujian)) {
             return res.status(200).json({
                success: false,
@@ -265,9 +304,10 @@ const order_affiliate_controller = {
             return res.status(200).json({ success: false, status: 400, message: 'Rincian invoice belum diisi. Gunakan menu Input Invoice terlebih dahulu' })
          }
 
-         // ⬅️ BARU: laboran tidak boleh kirim ke ketua lab sebelum laporan & rincian harga lengkap
+         // Laboran tidak boleh kirim ke ketua lab sebelum rincian harga lengkap.
+         // Laporan wajib kecuali order hanya berisi pembelian bahan.
          if (status_pengujian === 'Menunggu Diverifikasi') {
-            if (!data.laporan) {
+            if (!is_bahan_only(data) && !data.laporan) {
                return res.status(200).json({ success: false, status: 400, message: 'Upload laporan terlebih dahulu sebelum mengirim ke ketua lab' })
             }
             if (!data.rincian_harga_invoice || data.rincian_harga_invoice.length === 0) {
@@ -287,7 +327,7 @@ const order_affiliate_controller = {
    update_data_order_affiliate: async (req, res) => {
       try {
          const { id } = req.params
-         const body = req.body
+         const body = normalize_layanan_items(req.body)
          const role = req.user?.role
 
          if (!['laboran', 'ketua_lab', 'admin', 'superadmin'].includes(role)) {
@@ -342,6 +382,10 @@ const order_affiliate_controller = {
 
          if (!check_affiliate_access(req, data)) {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
+         }
+
+         if (is_bahan_only(data)) {
+            return res.status(200).json({ success: false, status: 400, message: 'Order pembelian bahan tidak memerlukan laporan' })
          }
 
          if (!['Order Dikonfirmasi', 'Order Diproses'].includes(data.status_pengujian)) {

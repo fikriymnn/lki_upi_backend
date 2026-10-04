@@ -99,6 +99,9 @@ const pembelian_bahan_schema = new mongoose.Schema({
     satuan: {
         type: String,
     },
+    jumlah: {
+        type: Number,
+    },
     keterangan: {
         type: String,
     },
