@@ -148,6 +148,13 @@ const is_bahan_only = (order) =>
    !(order.sewa_lab?.length || 0) &&
    !(order.sewa_alat?.length || 0)
 
+// ⬅️ BARU: order yang TIDAK memerlukan laporan — berisi sewa alat dan/atau pembelian bahan saja
+// (tanpa layanan analisis & tanpa sewa lab). Laboran cukup isi rincian harga lalu kirim ke ketua lab.
+const is_tanpa_laporan = (order) =>
+   ((order.sewa_alat?.length || 0) > 0 || (order.pembelian_bahan?.length || 0) > 0) &&
+   !(order.layanan_analisis?.length || 0) &&
+   !(order.sewa_lab?.length || 0)
+
 const order_affiliate_controller = {
 
 get_order_affiliate: async (req, res) => {
@@ -283,9 +290,9 @@ get_order_affiliate: async (req, res) => {
 
          let rule = STATUS_TRANSITIONS[data.status_pengujian]
 
-         // Order bahan-only: laboran boleh langsung kirim ke ketua lab dari "Order Dikonfirmasi"
-         // (tanpa harus upload laporan yang memindahkan status ke "Order Diproses")
-         if (data.status_pengujian === 'Order Dikonfirmasi' && is_bahan_only(data)) {
+         // Order tanpa laporan (sewa alat / pembelian bahan saja): laboran boleh langsung kirim ke ketua lab
+         // dari "Order Dikonfirmasi" (tanpa harus upload laporan yang memindahkan status ke "Order Diproses")
+         if (data.status_pengujian === 'Order Dikonfirmasi' && is_tanpa_laporan(data)) {
             rule = { targets: ['Order Diproses', 'Menunggu Diverifikasi'], roles: ['laboran'] }
          }
 
@@ -305,9 +312,9 @@ get_order_affiliate: async (req, res) => {
          }
 
          // Laboran tidak boleh kirim ke ketua lab sebelum rincian harga lengkap.
-         // Laporan wajib kecuali order hanya berisi pembelian bahan.
+         // Laporan wajib kecuali order hanya berisi sewa alat dan/atau pembelian bahan.
          if (status_pengujian === 'Menunggu Diverifikasi') {
-            if (!is_bahan_only(data) && !data.laporan) {
+            if (!is_tanpa_laporan(data) && !data.laporan) {
                return res.status(200).json({ success: false, status: 400, message: 'Upload laporan terlebih dahulu sebelum mengirim ke ketua lab' })
             }
             if (!data.rincian_harga_invoice || data.rincian_harga_invoice.length === 0) {
@@ -384,8 +391,8 @@ get_order_affiliate: async (req, res) => {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
          }
 
-         if (is_bahan_only(data)) {
-            return res.status(200).json({ success: false, status: 400, message: 'Order pembelian bahan tidak memerlukan laporan' })
+         if (is_tanpa_laporan(data)) {
+            return res.status(200).json({ success: false, status: 400, message: 'Order sewa alat / pembelian bahan tidak memerlukan laporan' })
          }
 
          if (!['Order Dikonfirmasi', 'Order Diproses'].includes(data.status_pengujian)) {
