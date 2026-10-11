@@ -69,13 +69,17 @@ const sewa_alat_schema = new mongoose.Schema({
         type: String, // mis. Shaker, Furnace, Autoklaf — beda dari sewa lab karena harga bergantung alatnya
     },
     jenis_sewa: {
-        type: String, // Hari / Jam / Bulan
+        type: String, // Menit / Jam / Hari / Minggu / Bulan.
     },
     tanggal_mulai: {
         type: Date,
     },
     tanggal_selesai: {
         type: Date,
+    },
+    jumlah_alat: {
+        type: Number, // qty alat yang dipinjam (unit)
+        default: 1,
     },
     jumlah: {
         type: Number,

@@ -11,7 +11,11 @@ const STATUS_OPTIONS = [
    'Menunggu Pembayaran',
    'Menunggu Verifikasi Pembayaran',
    'Selesai',
+   'Order Dibatalkan'
 ]
+
+// Status final yang tidak boleh dibatalkan admin
+const NON_CANCELLABLE_STATUS = ['Order Ditolak', 'Order Dibatalkan', 'Selesai']
 
 // ✅ Data pemohon (nama, email, kontak, institusi, dll) sudah tidak bisa diedit siapa pun
 // lewat endpoint ini — hanya rincian layanan yang boleh dikoreksi laboran/ketua_lab/admin.
@@ -133,7 +137,11 @@ const normalize_layanan_items = (body) => {
       out.sewa_lab = body.sewa_lab.map((r) => ({ ...r, jumlah: to_num(r.jumlah) }))
    }
    if (Array.isArray(body.sewa_alat)) {
-      out.sewa_alat = body.sewa_alat.map((r) => ({ ...r, jumlah: to_num(r.jumlah) }))
+      out.sewa_alat = body.sewa_alat.map((r) => ({
+         ...r,
+         jumlah: to_num(r.jumlah),
+         jumlah_alat: to_num(r.jumlah_alat) || 1,
+      }))
    }
    if (Array.isArray(body.layanan_analisis)) {
       out.layanan_analisis = body.layanan_analisis.map((r) => ({ ...r, jumlah_sample: to_num(r.jumlah_sample) }))
@@ -157,85 +165,85 @@ const is_tanpa_laporan = (order) =>
 
 const order_affiliate_controller = {
 
-get_order_affiliate: async (req, res) => {
-   try {
-      const { id } = req.params
-      const role = req.user?.role
+   get_order_affiliate: async (req, res) => {
+      try {
+         const { id } = req.params
+         const role = req.user?.role
 
-      if (id) {
-         const data = await OrderAffiliate.findOne({ _id: id })
-            .populate('id_affiliate', 'nama_laboratorium kode_laboratorium email no_whatsapp alamat')
-            .populate('id_user', 'nama_lengkap email')
-         if (!data) {
-            return res.status(200).json({ success: false, status: 404, message: 'Data order tidak ditemukan' })
+         if (id) {
+            const data = await OrderAffiliate.findOne({ _id: id })
+               .populate('id_affiliate', 'nama_laboratorium kode_laboratorium email no_whatsapp alamat')
+               .populate('id_user', 'nama_lengkap email')
+            if (!data) {
+               return res.status(200).json({ success: false, status: 404, message: 'Data order tidak ditemukan' })
+            }
+
+            if (!check_affiliate_access(req, data)) {
+               return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
+            }
+            if (role === 'user' && data.id_user?._id?.toString() !== req.user._id?.toString()) {
+               return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order ini' })
+            }
+
+            return res.status(200).json({ success: true, data })
          }
 
-         if (!check_affiliate_access(req, data)) {
-            return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
+         const { id_user, page = 1, limit = 10, search = '', status = '', year = '', month = '' } = req.query
+         let { id_affiliate } = req.query
+
+         if (['laboran', 'ketua_lab'].includes(role)) {
+            id_affiliate = req.user.id_affiliate
          }
-         if (role === 'user' && data.id_user?._id?.toString() !== req.user._id?.toString()) {
-            return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order ini' })
+
+         const current_page = parseInt(page)
+         const per_page = parseInt(limit)
+         const skip = (current_page - 1) * per_page
+
+         const filter = {}
+         if (id_affiliate) filter.id_affiliate = id_affiliate
+
+         if (role === 'user') {
+            filter.id_user = req.user._id
+         } else if (id_user) {
+            filter.id_user = id_user
          }
 
-         return res.status(200).json({ success: true, data })
+         // ⬅️ DIUBAH: admin/superadmin boleh query tanpa id_affiliate (lintas lab), dipakai notifikasi admin
+         if (!id_affiliate && !filter.id_user && !['admin', 'superadmin'].includes(role)) {
+            return res.status(200).json({ success: false, status: 400, message: 'id_affiliate atau id_user wajib diisi' })
+         }
+         if (status) filter.status_pengujian = status
+         if (search) {
+            filter.$or = [
+               { no_invoice: { $regex: search, $options: 'i' } },
+               { nama_lengkap: { $regex: search, $options: 'i' } },
+            ]
+         }
+
+         if (year) filter.year = year.toString()
+         if (month) filter.month = (parseInt(month) - 1).toString()
+
+         const total_data = await OrderAffiliate.countDocuments(filter)
+         const data = await OrderAffiliate.find(filter)
+            .populate('id_affiliate', 'nama_laboratorium kode_laboratorium')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(per_page)
+
+         return res.status(200).json({
+            success: true,
+            data,
+            pagination: {
+               total_data,
+               total_page: Math.ceil(total_data / per_page),
+               current_page,
+               per_page,
+            },
+         })
+      } catch (err) {
+         return res.status(500).json({ success: false, message: err.message })
       }
-
-      const { id_user, page = 1, limit = 10, search = '', status = '', year = '', month = '' } = req.query
-      let { id_affiliate } = req.query
-
-      if (['laboran', 'ketua_lab'].includes(role)) {
-         id_affiliate = req.user.id_affiliate
-      }
-
-      const current_page = parseInt(page)
-      const per_page = parseInt(limit)
-      const skip = (current_page - 1) * per_page
-
-      const filter = {}
-      if (id_affiliate) filter.id_affiliate = id_affiliate
-
-      if (role === 'user') {
-         filter.id_user = req.user._id
-      } else if (id_user) {
-         filter.id_user = id_user
-      }
-
-      // ⬅️ DIUBAH: admin/superadmin boleh query tanpa id_affiliate (lintas lab), dipakai notifikasi admin
-      if (!id_affiliate && !filter.id_user && !['admin', 'superadmin'].includes(role)) {
-         return res.status(200).json({ success: false, status: 400, message: 'id_affiliate atau id_user wajib diisi' })
-      }
-      if (status) filter.status_pengujian = status
-      if (search) {
-         filter.$or = [
-            { no_invoice: { $regex: search, $options: 'i' } },
-            { nama_lengkap: { $regex: search, $options: 'i' } },
-         ]
-      }
-
-      if (year) filter.year = year.toString()
-      if (month) filter.month = (parseInt(month) - 1).toString()
-
-      const total_data = await OrderAffiliate.countDocuments(filter)
-      const data = await OrderAffiliate.find(filter)
-         .populate('id_affiliate', 'nama_laboratorium kode_laboratorium')
-         .sort({ createdAt: -1 })
-         .skip(skip)
-         .limit(per_page)
-
-      return res.status(200).json({
-         success: true,
-         data,
-         pagination: {
-            total_data,
-            total_page: Math.ceil(total_data / per_page),
-            current_page,
-            per_page,
-         },
-      })
-   } catch (err) {
-      return res.status(500).json({ success: false, message: err.message })
-   }
-},
+   },
 
    add_order_affiliate: async (req, res) => {
       try {
@@ -288,11 +296,24 @@ get_order_affiliate: async (req, res) => {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
          }
 
+         // Admin/superadmin boleh membatalkan order kapan saja (kecuali status final)
+         if (status_pengujian === 'Order Dibatalkan') {
+            if (!['admin', 'superadmin'].includes(role)) {
+               return res.status(200).json({ success: false, status: 403, message: 'Hanya admin yang bisa membatalkan order' })
+            }
+            if (NON_CANCELLABLE_STATUS.includes(data.status_pengujian)) {
+               return res.status(200).json({ success: false, status: 400, message: `Order dengan status "${data.status_pengujian}" tidak bisa dibatalkan` })
+            }
+            data.status_pengujian = 'Order Dibatalkan'
+            await data.save()
+            return res.status(200).json({ success: true, message: 'Order berhasil dibatalkan', data })
+         }
+
          let rule = STATUS_TRANSITIONS[data.status_pengujian]
 
-         // Order tanpa laporan (sewa alat / pembelian bahan saja): laboran boleh langsung kirim ke ketua lab
-         // dari "Order Dikonfirmasi" (tanpa harus upload laporan yang memindahkan status ke "Order Diproses")
-         if (data.status_pengujian === 'Order Dikonfirmasi' && is_tanpa_laporan(data)) {
+         // Upload laporan bersifat opsional: dari "Order Dikonfirmasi" laboran boleh
+         // langsung kirim ke ketua lab (tanpa harus upload laporan terlebih dahulu)
+         if (data.status_pengujian === 'Order Dikonfirmasi') {
             rule = { targets: ['Order Diproses', 'Menunggu Diverifikasi'], roles: ['laboran'] }
          }
 
@@ -312,11 +333,8 @@ get_order_affiliate: async (req, res) => {
          }
 
          // Laboran tidak boleh kirim ke ketua lab sebelum rincian harga lengkap.
-         // Laporan wajib kecuali order hanya berisi sewa alat dan/atau pembelian bahan.
+         // Upload laporan bersifat opsional.
          if (status_pengujian === 'Menunggu Diverifikasi') {
-            if (!is_tanpa_laporan(data) && !data.laporan) {
-               return res.status(200).json({ success: false, status: 400, message: 'Upload laporan terlebih dahulu sebelum mengirim ke ketua lab' })
-            }
             if (!data.rincian_harga_invoice || data.rincian_harga_invoice.length === 0) {
                return res.status(200).json({ success: false, status: 400, message: 'Isi rincian harga terlebih dahulu sebelum mengirim ke ketua lab' })
             }
@@ -350,6 +368,10 @@ get_order_affiliate: async (req, res) => {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
          }
 
+         if (['Order Dibatalkan', 'Order Ditolak'].includes(data.status_pengujian)) {
+            return res.status(200).json({ success: false, status: 400, message: 'Order yang sudah dibatalkan/ditolak tidak bisa diedit' })
+         }
+
          EDITABLE_FIELDS.forEach((key) => {
             if (body[key] !== undefined) data[key] = body[key]
          })
@@ -362,7 +384,7 @@ get_order_affiliate: async (req, res) => {
       }
    },
 
-      // ==============================
+   // ==============================
    // UPLOAD LAPORAN — hanya laboran, hanya field `laporan` (rincian_biaya sudah tidak dipakai lagi,
    // digantikan sistem rincian_harga_invoice yang diisi lewat update_invoice_order_affiliate).
    // Bisa diupload sejak status "Order Dikonfirmasi" — saat pertama kali tersimpan di tahap itu,
