@@ -4,6 +4,21 @@ const Order = require("../model/order_model");
 const mongoose = require("mongoose");
 const user_model = require("../model/user_model");
 
+// ⬅️ BARU: dipakai update_invoice saat status "Selesai" tanpa s8_date (sebelumnya ReferenceError)
+function timeNow() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+// ⬅️ BARU: ubah from/to (string) jadi Date supaya cocok dengan field `date` bertipe Date di aggregate
+// (aggregate tidak melakukan cast tipe seperti find). Kalau tanggal tidak valid, filter diabaikan.
+function build_date_filter(from, to) {
+  const f = new Date(from);
+  const t = new Date(to);
+  if (isNaN(f.getTime()) || isNaN(t.getTime())) return null;
+  return { $lt: t, $gt: f };
+}
+
 // ── Helper untuk auto-hitung estimasi_date ──────────────────────────
 function get_hari_kerja(lama_pengerjaan_str) {
   if (!lama_pengerjaan_str) return 0;
@@ -144,7 +159,8 @@ const invoice_controller = {
         }
 
         if (from && to) {
-          obj.date = { $lt: to, $gt: from };
+          const range = build_date_filter(from, to); // ⬅️ DIUBAH
+          if (range) obj.date = range;
         }
 
         if (year) {
@@ -240,7 +256,8 @@ const invoice_controller = {
         }
 
         if (from && to) {
-          obj.date = { $lt: to, $gt: from };
+          const range = build_date_filter(from, to); // ⬅️ DIUBAH
+          if (range) obj.date = range;
         }
 
         if (year) {
@@ -323,7 +340,8 @@ const invoice_controller = {
         }
 
         if (from && to) {
-          obj.date = { $lt: to, $gt: from };
+          const range = build_date_filter(from, to); // ⬅️ DIUBAH
+          if (range) obj.date = range;
         }
 
         if (year) {
