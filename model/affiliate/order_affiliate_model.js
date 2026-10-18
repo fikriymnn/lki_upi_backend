@@ -212,6 +212,11 @@ const order_affiliate_schema = new mongoose.Schema(
         hasil_analisis: {
             type: String, // path/URL file rincian biaya yang diupload laboran
         },
+        // Diset saat admin menandai order "Selesai" — dipakai untuk no. & tanggal kwitansi
+        // supaya tidak ikut berubah ketika status pindah ke "Pencairan Dana Diterima"
+        tanggal_selesai: {
+            type: Date,
+        },
         syarat_ketentuan: {
             type: Boolean,
             default: false,

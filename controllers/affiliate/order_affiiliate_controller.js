@@ -11,11 +11,19 @@ const STATUS_OPTIONS = [
    'Menunggu Pembayaran',
    'Menunggu Verifikasi Pembayaran',
    'Selesai',
+   'Pencairan Dana Diterima',
    'Order Dibatalkan'
 ]
 
+const STATUS_PENCAIRAN = 'Pencairan Dana Diterima'
+// Setelah pencairan, order disembunyikan dari laboran & ketua lab
+const HIDE_PENCAIRAN_ROLES = ['laboran', 'ketua_lab']
+
+// Status kwitansi sudah bisa diunduh
+const KWITANSI_STATUS = ['Selesai', STATUS_PENCAIRAN]
+
 // Status final yang tidak boleh dibatalkan admin
-const NON_CANCELLABLE_STATUS = ['Order Ditolak', 'Order Dibatalkan', 'Selesai']
+const NON_CANCELLABLE_STATUS = ['Order Ditolak', 'Order Dibatalkan', 'Selesai', STATUS_PENCAIRAN]
 
 // ✅ Data pemohon (nama, email, kontak, institusi, dll) sudah tidak bisa diedit siapa pun
 // lewat endpoint ini — hanya rincian layanan yang boleh dikoreksi laboran/ketua_lab/admin.
@@ -30,6 +38,7 @@ const STATUS_TRANSITIONS = {
    'Order Diproses': { targets: ['Menunggu Diverifikasi'], roles: ['laboran'] },
    'Menunggu Diverifikasi': { targets: ['Selesai Diverifikasi', 'Order Diproses'], roles: ['ketua_lab'] },
    'Menunggu Verifikasi Pembayaran': { targets: ['Selesai'], roles: ['admin', 'superadmin'] },
+   'Selesai': { targets: [STATUS_PENCAIRAN], roles: ['admin', 'superadmin'] },
 }
 
 // Kota tempat kuitansi diterbitkan — fixed, bukan dari data lab
@@ -58,8 +67,8 @@ const generate_no_invoice = async (id_affiliate) => {
 // ==============================
 // GENERATE NO. KWITANSI — dihitung on-the-fly saat kuitansi di-download, TIDAK disimpan ke DB
 // Urutan dihitung dari posisi order ini di antara order berstatus "Selesai" milik lab yang sama,
-// di tahun yang sama, sampai waktu order ini selesai (updatedAt) — supaya nomornya stabil
-// walau di-download ulang berkali-kali.
+// di tahun yang sama, sampai waktu order ini selesai (tanggal_selesai, fallback updatedAt untuk data lama) —
+// supaya nomornya stabil walau di-download ulang berkali-kali.
 // ==============================
 const generate_no_kwitansi = async (order) => {
    const lab = order.id_affiliate?.kode_laboratorium
@@ -70,13 +79,17 @@ const generate_no_kwitansi = async (order) => {
       throw new Error('Lab affiliate tidak ditemukan, tidak bisa membuat no kwitansi')
    }
 
-   const tahun = new Date(order.updatedAt).getFullYear()
+   const tgl_selesai = order.tanggal_selesai || order.updatedAt
+   const tahun = new Date(tgl_selesai).getFullYear()
 
    const urutan = await OrderAffiliate.countDocuments({
       id_affiliate: lab._id,
       year: tahun.toString(),
-      status_pengujian: 'Selesai',
-      updatedAt: { $lte: order.updatedAt },
+      status_pengujian: { $in: KWITANSI_STATUS },
+      $or: [
+         { tanggal_selesai: { $lte: tgl_selesai } },
+         { tanggal_selesai: null, updatedAt: { $lte: tgl_selesai } }, // data lama
+      ],
    })
 
    return `${urutan}/${lab.kode_laboratorium}/UPI/${tahun}`
@@ -181,6 +194,9 @@ const order_affiliate_controller = {
             if (!check_affiliate_access(req, data)) {
                return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order lab affiliate lain' })
             }
+            if (HIDE_PENCAIRAN_ROLES.includes(role) && data.status_pengujian === STATUS_PENCAIRAN) {
+               return res.status(200).json({ success: false, status: 404, message: 'Data order tidak ditemukan' })
+            }
             if (role === 'user' && data.id_user?._id?.toString() !== req.user._id?.toString()) {
                return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order ini' })
             }
@@ -212,7 +228,20 @@ const order_affiliate_controller = {
          if (!id_affiliate && !filter.id_user && !['admin', 'superadmin'].includes(role)) {
             return res.status(200).json({ success: false, status: 400, message: 'id_affiliate atau id_user wajib diisi' })
          }
-         if (status) filter.status_pengujian = status
+
+         // ⬅️ DIUBAH: status boleh lebih dari satu, dipisah koma (mis. "Selesai,Pencairan Dana Diterima")
+         if (status) {
+            filter.status_pengujian = status.includes(',') ? { $in: status.split(',') } : status
+         }
+
+         // Laboran & ketua lab tidak boleh melihat order berstatus pencairan dana, apa pun filter statusnya
+         if (HIDE_PENCAIRAN_ROLES.includes(role)) {
+            const requested = status ? status.split(',') : []
+            filter.status_pengujian = requested.length
+               ? { $in: requested.filter((s) => s !== STATUS_PENCAIRAN) }
+               : { $ne: STATUS_PENCAIRAN }
+         }
+
          if (search) {
             filter.$or = [
                { no_invoice: { $regex: search, $options: 'i' } },
@@ -341,6 +370,7 @@ const order_affiliate_controller = {
          }
 
          data.status_pengujian = status_pengujian
+         if (status_pengujian === 'Selesai') data.tanggal_selesai = new Date()
          await data.save()
 
          return res.status(200).json({ success: true, message: 'Status order berhasil diperbarui', data })
@@ -574,6 +604,11 @@ const order_affiliate_controller = {
          }
 
          if (status) filter.status_pengujian = status
+         if (HIDE_PENCAIRAN_ROLES.includes(role)) {
+            filter.status_pengujian = status
+               ? (status === STATUS_PENCAIRAN ? { $in: [] } : status)
+               : { $ne: STATUS_PENCAIRAN }
+         }
          if (search) {
             filter.$or = [
                { no_invoice: { $regex: search, $options: 'i' } },
@@ -620,7 +655,7 @@ const order_affiliate_controller = {
 
    // ==============================
    // GET DATA KWITANSI — untuk generate file kwitansi di FE
-   // Hanya tersedia saat status_pengujian sudah "Selesai"
+   // Tersedia saat status_pengujian "Selesai" atau "Pencairan Dana Diterima"
    // no_kwitansi & kota dihitung/di-set on-the-fly, tidak disimpan ke DB
    // ==============================
    get_kwitansi_order_affiliate: async (req, res) => {
@@ -643,7 +678,7 @@ const order_affiliate_controller = {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses ke order ini' })
          }
 
-         if (data.status_pengujian !== 'Selesai') {
+         if (!KWITANSI_STATUS.includes(data.status_pengujian)) {
             return res.status(200).json({ success: false, status: 400, message: 'Kwitansi hanya tersedia setelah order berstatus "Selesai"' })
          }
 
@@ -661,7 +696,7 @@ const order_affiliate_controller = {
             uang_sejumlah_terbilang: terbilang_rupiah(data.total_keseluruhan || 0),
             untuk_pembayaran,
             kota: KWITANSI_KOTA,
-            tanggal: new Date(data.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+            tanggal: new Date(data.tanggal_selesai || data.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
             nama_laboratorium: data.id_affiliate?.nama_laboratorium || '-',
          }
 
