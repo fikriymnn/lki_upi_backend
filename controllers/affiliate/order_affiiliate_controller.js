@@ -18,6 +18,7 @@ const STATUS_OPTIONS = [
 const STATUS_PENCAIRAN = 'Pencairan Dana Diterima'
 // Setelah pencairan, order disembunyikan dari laboran & ketua lab
 const HIDE_PENCAIRAN_ROLES = ['laboran', 'ketua_lab']
+const KODE_LAB_PENCAIRAN = 'LKIP'
 
 // Status kwitansi sudah bisa diunduh
 const KWITANSI_STATUS = ['Selesai', STATUS_PENCAIRAN]
@@ -355,6 +356,20 @@ const order_affiliate_controller = {
          }
          if (!rule.roles.includes(role)) {
             return res.status(200).json({ success: false, status: 403, message: 'Anda tidak memiliki akses untuk mengubah status pada tahap ini' })
+         }
+
+         // ⬅️ BARU: "Pencairan Dana Diterima" hanya berlaku untuk order milik lab LKIP.
+         // Lab lain berhenti di status "Selesai".
+         if (status_pengujian === STATUS_PENCAIRAN) {
+            const lab = await LabAffiliate.findOne({ _id: data.id_affiliate })
+            const kode = (lab?.kode_laboratorium || '').toUpperCase()
+            if (kode !== KODE_LAB_PENCAIRAN) {
+               return res.status(200).json({
+                  success: false,
+                  status: 400,
+                  message: `Status "${STATUS_PENCAIRAN}" hanya berlaku untuk laboratorium ${KODE_LAB_PENCAIRAN}`
+               })
+            }
          }
 
          if (status_pengujian === 'Menunggu Pembayaran' && (!data.rincian_harga_invoice || data.rincian_harga_invoice.length === 0)) {
